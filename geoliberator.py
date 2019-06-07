@@ -22,57 +22,56 @@ class GeoLiberator:
         self.addr = str(addr)
     def getAddressNum(self):
         pass
-    def getStreet(self, mode=0, log=False):
+    def getStreet(self, mode=0):
         get = (self.addr).upper(); new_addr = ''
         get = (re.sub(r"[!#$%^*+=`~/]", ' ', get)).strip(' ')
-        try:
-            if re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(ST|STR|STRE|STREET)\W?", get):
-                grab = re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(ST|STR|STRE|STREET)\W?", get)
-                if grab.group(1).strip(' ').isdigit():
-                    new_addr = grab.group(1).strip(' ') + ' STREET'
-                else:
-                    new_addr = grab.group(4)
-            elif re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(AV|AE|AVE|AVEN|AVENUE)\W?", get):
-                grab = re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(AV|AE|AVE|AVEN|AVENUE)\W?", get)
-                new_addr = grab.group(1).strip(' ') + ' AVENUE'
-            elif re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(RD|ROAD)\W?", get):
-                grab = re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(RD|ROAD)\W?", get)
-                new_addr = grab.group(1).strip(' ') + ' ROAD'
-            elif re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(DR|DRIVE)\W?", get):
-                grab = re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(DR|DRIVE)\W?", get)
-                new_addr = grab.group(1).strip(' ') + ' DRIVE'
-            elif re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(PL|PLCE|PLAC|PLACE)\W?", get):
-                grab = re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(PL|PLCE|PLAC|PLACE)\W?", get)
-                new_addr = grab.group(1).strip(' ') + ' PLACE'
-            elif re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(BO|BLVD|BOUL|BOULEVARD)\W?", get):
-                grab = re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(BO|BLVD|BOUL|BOULEVARD)\W?", get)
-                new_addr = grab.group(1).strip(' ') + ' BOULEVARD'
-            elif re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(PKWY|PARKWAY)\W?", get):
-                grab = re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(PKWY|PARKWAY)\W?", get)
-                new_addr = grab.group(1).strip(' ') + ' PARKWAY'
-            elif re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(HWY|HWAY|HIGHWAY)\W?", get):
-                grab = re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(HWY|HWAY|HIGHWAY)\W?", get)
-                new_addr = grab.group(1).strip(' ') + ' HIGHWAY'
-            elif re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(EXP|EXPY|EXPWY|EXPWA|EXPRESSWAY)\W?", get):
-                grab = re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(EXP|EXPY|EXPWY|EXPWA|EXPRESSWAY)\W?", get)
-                new_addr = grab.group(1).strip(' ') + ' EXPRESSWAY'
-            elif re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(BDWY|BROADWAY)\W?", get):
-                grab = re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(BDWY|BROADWAY)\W?", get)
-                new_addr = grab.group(1).strip(' ') + ' BROADWAY'
-            elif re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(LANE)\W?", get):
-                grab = re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(LANE)\W?", get)
-                new_addr = grab.group(1).strip(' ') + ' LANE'
-            elif re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(CT|CRT|COURT)\W?", get):
-                grab = re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(CT|CRT|COURT)\W?", get)
-                new_addr = grab.group(1).strip(' ') + ' COURT'
-            elif re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(HTS|HEIGHTS)\W?", get):
-                grab = re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(HTS|HEIGHTS)\W?", get)
-                new_addr = grab.group(1).strip(' ') + ' HEIGHTS'
+        if re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(STREET|STRE|STR|ST)\W?", get):
+            grab = re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(STREET|STRE|STR|ST)\W?", get)
+            if re.sub(r"(\D+)", '', grab.group(3)).isdigit():
+                new_addr = re.sub(r"(\D+)", '', grab.group(3)) + ' STREET'
             else:
-                new_addr = "OTHER"
-                raise AddressError
-        except AddressError:
-            assert 0 == "{cause}", "{reason}"
+                if grab.group(1) == None:
+                    new_addr = grab.group(3) + 'STREET'
+                else:
+                    new_addr = ''.join(grab.group(1,2,3)) + 'STREET'
+        elif re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(AVENUE|AVEN|AVE|AV|AE)\W?", get):
+            grab = re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(AVENUE|AVEN|AVE|AV|AE)\W?", get)
+            new_addr = grab.group(1).strip(' ') + ' AVENUE'
+        elif re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(ROAD|RD)\W?", get):
+            grab = re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(ROAD|RD)\W?", get)
+            new_addr = grab.group(1).strip(' ') + ' ROAD'
+        elif re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(DRIVE|DR)\W?", get):
+            grab = re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(DRIVE|DR)\W?", get)
+            new_addr = grab.group(1).strip(' ') + ' DRIVE'
+        elif re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(PLACE|PLAC|PLCE|PL)\W?", get):
+            grab = re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(PLACE|PLAC|PLCE|PL)\W", get)
+            new_addr = grab.group(1).strip(' ') + ' PLACE'
+        elif re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(BOULEVARD|BLVD|BOUL|BO)\W?", get):
+            grab = re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(BOULEVARD|BLVD|BOUL|BO)\W?", get)
+            new_addr = grab.group(1).strip(' ') + ' BOULEVARD'
+        elif re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(PARKWAY|PKWY)\W?", get):
+            grab = re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(PARKWAY|PKWY)\W?", get)
+            new_addr = grab.group(1).strip(' ') + ' PARKWAY'
+        elif re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(HIGHWAY|HWAY|HWY|)\W?", get):
+            grab = re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(HIGHWAY|HWAY|HWY|)\W?", get)
+            new_addr = grab.group(1).strip(' ') + ' HIGHWAY'
+        elif re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(EXPRESSWAY|EXPWA|EXPWY|EXPY|EXP)\W?", get):
+            grab = re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(EXPRESSWAY|EXPWA|EXPWY|EXPY|EXP)\W?", get)
+            new_addr = grab.group(1).strip(' ') + ' EXPRESSWAY'
+        elif re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(BROADWAY|BDWY)\W?", get):
+            grab = re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(BROADWAY|BDWY)\W?", get)
+            new_addr = grab.group(1).strip(' ') + ' BROADWAY'
+        elif re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(LANE|LN)\W?", get):
+            grab = re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(LANE|LN)\W?", get)
+            new_addr = grab.group(1).strip(' ') + ' LANE'
+        elif re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(COURT|CRT|CT)\W?", get):
+            grab = re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(COURT|CRT|CT)\W?", get)
+            new_addr = grab.group(1).strip(' ') + ' COURT'
+        elif re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(HEIGHTS|HTS)\W?", get):
+            grab = re.search(r"((?!\d)\W(\w+ )+)?(\w+(\W|\d))(HEIGHTS|HTS)\W?", get)
+            new_addr = grab.group(1).strip(' ') + ' HEIGHTS'
+        else:
+            new_addr = "OTHER"
         if mode == 0:
             print(new_addr)
         else: #Write to new or specfied file
@@ -84,7 +83,7 @@ class GeoLiberator:
         get = (self.addr).upper()
         get = (re.sub(r"[!#$%^*+=`~/]", ' ', get)).strip(' ')
 
-adr = GeoLiberator("331 2 Street")
+adr = GeoLiberator("331 Martin Luther King Jr Street")
 adr.getStreet()
 ##with open("hold.txt") as f:
 ##    lines = f.readlines()
