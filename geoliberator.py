@@ -1,10 +1,12 @@
 import pandas as pd
 import re
+import time
+t0 = time.process_time_ns()
 
-#Account for no address number and cardinal direction beginning
-#Account for for '&' and Saint(ST) and Fort(FT)
+#Account for '&' and Saint(ST) and Fort(FT)
 #Create full address parser
-#Clear further to pick up mismatches
+#Clear further to pick up missed matches
+#Attempt to optimize speed by looping through streetTypes["All"] while executing re.search(fr"...{}...")
 
 class AddressError(BaseException):
     pass
@@ -17,6 +19,30 @@ class GeoLiberator:
     One may manipulate object using member functions in order to parse certain properties of the address.
     Second 'mode' argument set to 'print' by default to print to standard output or write to new specified file name.
     '''
+    streetTypes = {"All": ["STREET","STRE","STR","ST",
+                           "AVENUE","AVEN","AVE","AV","AE",
+                           "ROAD","RD","DRIVE","DR",
+                           "PLACE","PLAC","PLCE","PL","PLC",
+                           "BOULEVARD","BLVD","BOUL","BO",
+                           "LANE","LN","COURT","CRT","CT",
+                           "HEIGHTS","HTS","PARKWAY","PKWY",
+                           "HIGHWAY","HWAY","HWY",
+                           "EXPRESSWAY","EXPWA","EXPWY","EXPY","EXP",
+                           "BROADWAY","BDWY","BWY","TURNPIKE","TPKE"],
+                   "STREET": ["STREET","STRE","STR","ST"],
+                    "AVENUE": ["AVENUE","AVEN","AVE","AV","AE"],
+                    "ROAD": ["ROAD","RD"],
+                    "DRIVE": ["DRIVE","DR"],
+                    "PLACE": ["PLACE","PLAC","PLCE","PL","PLC"],
+                    "BOULEVARD": ["BOULEVARD","BLVD","BOUL","BO"],
+                    "LANE": ["LANE","LN"],
+                    "COURT": ["COURT","CRT","CT"],
+                    "HEIGHTS": ["HEIGHTS","HTS"],
+                    "PARKWAY": ["PARKWAY","PKWY"],
+                    "HIGHWAY": ["HIGHWAY","HWAY","HWY"],
+                    "EXPRESSWAY": ["EXPRESSWAY","EXPWA","EXPWY","EXPY","EXP"],
+                    "BROADWAY": ["BROADWAY","BDWY","BWY"],
+                    "TURNPIKE": ["TURNPIKE","TPKE"]}
     def __init__(self, addr):
         self.addr = str(addr)
     def getCompass(self, direc):
@@ -52,106 +78,134 @@ class GeoLiberator:
         get = (self.addr).upper(); new_addr = '' #Uppercase and create new address to return
         get = (re.sub(r"[!#$%^*+=`~/]", ' ', get)).strip(' ') #Strip any anomalies
         get = re.sub(r"(?<=\d)(ND|RD|TH|RTH)", '', get) #Strip any char of ordinal numbers
-        if re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(STREET|STRE|STR|ST)(\W|$)", get): #Single char cardinal directions (STREET)
-            grab = re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(STREET|STRE|STR|ST)(\W|$)", get)
+        strPat1 = re.search(r"(?!\d)([NSEW])( ?\d+ ?| [A-Z]+ )(STREET|STRE\.?|STR\.?|ST\.?)(\W|$)", get) #STREET
+        strPat2 = re.search(r"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?\d+ ?|([A-Z][A-Z]+ )+)(STREET|STRE\.?|STR\.?|ST\.?)(\W|$)", get)
+        avePat1 = re.search(r"(?!\d)(AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z])[ ,-]", get) #AVENUE
+        avePat2 = re.search(r"(?!\d)([NSEW])( ?\d+ ?| [A-Z]+ )(AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?)(\W|$)", get)
+        avePat3 = re.search(r"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?\d+ ?|([A-Z][A-Z]+ )+)(AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?)(\W|$)", get)
+        rdPat1 = re.search(r"(?!\d)([NSEW])( ?\d+ ?| [A-Z]+ )(ROAD|RD\.?)(\W|$)", get) #ROAD
+        rdPat2 = re.search(r"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?\d+ ?|([A-Z][A-Z]+ )+)(ROAD|RD\.?)(\W|$)", get)
+        drvPat1 = re.search(r"(?!\d)([NSEW])( ?\d+ ?| [A-Z]+ )(DRIVE|DR\.?)(\W|$)", get) #DRIVE
+        drvPat2 = re.search(r"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?\d+ ?|([A-Z][A-Z]+ )+)(DRIVE|DR\.?)(\W|$)", get)
+        plcPat1 = re.search(r"(?!\d)([NSEW])( ?\d+ ?| [A-Z]+ )(PLACE|PLAC\.?|PLCE\.?|PL\.?|PLC\.?)(\W|$)", get) #PLACE
+        plcPat2 = re.search(r"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?\d+ ?|([A-Z][A-Z]+ )+)(PLACE|PLAC\.?|PLCE\.?|PL\.?|PLC\.?)(\W|$)", get)
+        blvdPat1 = re.search(r"(?!\d)([NSEW])( ?\d+ ?| [A-Z]+ )(BOULEVARD|BLVD\.?|BOUL\.?|BO\.?)(\W|$)", get) #BOULEVARD
+        blvdPat2 = re.search(r"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?\d+ ?|([A-Z][A-Z]+ )+)(BOULEVARD|BLVD\.?|BOUL\.?|BO\.?)(\W|$)", get)
+        lnPat1 = re.search(r"(?!\d)([NSEW])( ?\d+ ?| [A-Z]+ )(LANE|LN\.?)(\W|$)", get) #LANE
+        lnPat2 = re.search(r"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?\d+ ?|([A-Z][A-Z]+ )+)(LANE|LN\.?)(\W|$)", get)
+        crtPat1 = re.search(r"(?!\d)([NSEW])( ?\d+ ?| [A-Z]+ )(COURT|CRT\.?|CT\.?)(\W|$)", get) #COURT
+        crtPat2 = re.search(r"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?\d+ ?|([A-Z][A-Z]+ )+)(COURT|CRT\.?|CT\.?)(\W|$)", get)
+        htsPat1 = re.search(r"(?!\d)([NSEW])( ?\d+ ?| [A-Z]+ )(HEIGHTS|HTS\.?)(\W|$)", get) #HEIGHTS
+        htsPat2 = re.search(r"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?\d+ ?|([A-Z][A-Z]+ )+)(HEIGHTS|HTS\.?)(\W|$)", get)
+        pwyPat1 = re.search(r"(?!\d)([NSEW])( ?\d+ ?| [A-Z]+ )(PARKWAY|PKWY\.?)(\W|$)", get) #PARKWAY
+        pwyPat2 = re.search(r"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?\d+ ?|([A-Z][A-Z]+ )+)(PARKWAY|PKWY\.?)(\W|$)", get)
+        hwyPat1 = re.search(r"(?!\d)([NSEW])( ?\d+ ?| [A-Z]+ )(HIGHWAY|HWAY\.?|HWY\.?)(\W|$)", get) #HIGHWAY
+        hwyPat2 = re.search(r"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?\d+ ?|([A-Z][A-Z]+ )+)(HIGHWAY|HWAY\.?|HWY\.?)(\W|$)", get)
+        expPat1 = re.search(r"(?!\d)([NSEW])( ?\d+ ?| [A-Z]+ )(EXPRESSWAY|EXPWA\.?|EXPWY\.?|EXPY\.?|EXP\.?)(\W|$)", get) #EXPRESWAY
+        expPat2 = re.search(r"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?\d+ ?|([A-Z][A-Z]+ )+)(EXPRESSWAY|EXPWA\.?|EXPWY\.?|EXPY\.?|EXP\.?)(\W|$)", get)
+        bwyPat1 = re.search(r"(?!\d)([NSEW])( ?\d+ ?| [A-Z]+ )(BROADWAY|BDWY\.?|BWY\.?)(\W|$)", get) #BROADWAY
+        bwyPat2 = re.search(r"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?\d+ ?|([A-Z][A-Z]+ )+)(BROADWAY|BDWY\.?|BWY\.?)(\W|$)", get)
+        tpkPat1 = re.search(r"(?!\d)([NSEW])( ?\d+ ?| [A-Z]+ )(TURNPIKE|TPKE\.?)(\W|$)", get) #TURNPIKE
+        tpkPat2 = re.search(r"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?\d+ ?|([A-Z][A-Z]+ )+)(TURNPIKE|TPKE\.?)(\W|$)", get)
+        if strPat1: #Single char cardinal directions (STREET)
+            grab = strPat1
             new_addr = self.getCompass(grab.group(1)) + ' ' + grab.group(2).strip(' ') + " STREET"
-        elif re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(STREET|STRE|STR|ST)(\W|$)", get): #All (STREET)
-            grab = re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(STREET|STRE|STR|ST)(\W|$)", get)
+        elif strPat2: #All (STREET)
+            grab = strPat2
             new_addr = grab.group(1).strip(' ') + " STREET"
 
-        elif re.search(r"(?!\d)(AVENUE|AVEN|AVE|AV|AE) ([A-Z])[ ,-]", get): #AVENUE [A-Z]
-                    grab = re.search(r"(?!\d)(AVENUE|AVEN|AVE|AV|AE) ([A-Z])[ ,-]", get)
+        elif avePat1: #AVENUE [A-Z]
+                    grab = avePat1
                     new_addr = "AVENUE " + grab.group(2)
-
-        elif re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(AVENUE|AVEN|AVE|AV|AE)(\W|$)", get): #Single char cardinal directions (AVENUE)
-            grab = re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(AVENUE|AVEN|AVE|AV|AE)(\W|$)", get)
+        elif avePat2: #Single char cardinal directions (AVENUE)
+            grab = avePat2
             new_addr = grab.group(1).strip(' ') + " AVENUE"
-        elif re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(AVENUE|AVEN|AVE|AV|AE)(\W|$)", get): #All (AVENUE)
-            grab = re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(AVENUE|AVEN|AVE|AV|AE)(\W|$)", get)
+        elif avePat3: #All (AVENUE)
+            grab = avePat3
             new_addr = grab.group(1).strip(' ') + " AVENUE"
 
-        elif re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(ROAD|RD)(\W|$)", get): #Single char cardinal directions (ROAD)
-            grab = re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(ROAD|RD)(\W|$)", get)
+        elif rdPat1: #Single char cardinal directions (ROAD)
+            grab = rdPat1
             new_addr = grab.group(1).strip(' ') + " ROAD"
-        elif re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(ROAD|RD)(\W|$)", get): #All (ROAD)
-            grab = re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(ROAD|RD)(\W|$)", get)
+        elif rdPat2: #All (ROAD)
+            grab = rdPat2
             new_addr = grab.group(1).strip(' ') + " ROAD"
 
-        elif re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(DRIVE|DR)(\W|$)", get): #Single char cardinal directions (DRIVE)
-            grab = re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(DRIVE|DR)(\W|$)", get)
+        elif drvPat1: #Single char cardinal directions (DRIVE)
+            grab = drvPat1
             new_addr = grab.group(1).strip(' ') + " DRIVE"
-        elif re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(DRIVE|DR)(\W|$)", get): #All (DRIVE)
-            grab = re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(DRIVE|DR)(\W|$)", get)
+        elif drvPat2: #All (DRIVE)
+            grab = drvPat2
             new_addr = grab.group(1).strip(' ') + " DRIVE"
 
-        elif re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(PLACE|PLAC|PLCE|PL)(\W|$)", get): #Single char cardinal directions (PLACE)
-            grab = re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(PLACE|PLAC|PLCE|PL)(\W|$)", get)
+        elif plcPat1: #Single char cardinal directions (PLACE)
+            grab = plcPat1
             new_addr = grab.group(1).strip(' ') + " PLACE"
-        elif re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(PLACE|PLAC|PLCE|PL)(\W|$)", get): #All (PLACE)
-            grab = re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(PLACE|PLAC|PLCE|PL)(\W|$)", get)
+        elif plcPat2: #All (PLACE)
+            grab = plcPat2
             new_addr = grab.group(1).strip(' ') + " PLACE"
 
-        elif re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(BOULEVARD|BLVD|BOUL|BO)(\W|$)", get): #Single char cardinal directions (BOULEVARD)
-            grab = re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(BOULEVARD|BLVD|BOUL|BO)(\W|$)", get)
+        elif blvdPat1: #Single char cardinal directions (BOULEVARD)
+            grab = blvdPat1
             new_addr = grab.group(1).strip(' ') + " BOULEVARD"
-        elif re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(BOULEVARD|BLVD|BOUL|BO)(\W|$)", get): #All (BOULEVARD)
-            grab = re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(BOULEVARD|BLVD|BOUL|BO)(\W|$)", get)
+        elif blvdPat2: #All (BOULEVARD)
+            grab = blvdPat2
             new_addr = grab.group(1).strip(' ') + " BOULEVARD"
 
-        elif re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(LANE|LN)(\W|$)", get): #Single char cardinal directions (LANE)
-            grab = re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(LANE|LN)(\W|$)", get)
+        elif lnPat1: #Single char cardinal directions (LANE)
+            grab = lnPat1
             new_addr = grab.group(1).strip(' ') + " LANE"
-        elif re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(LANE|LN)(\W|$)", get): #All (LANE)
-            grab = re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(LANE|LN)(\W|$)", get)
+        elif lnPat2: #All (LANE)
+            grab = lnPat2
             new_addr = grab.group(1).strip(' ') + " LANE"
 
-        elif re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(COURT|CRT|CT)(\W|$)", get): #Single char cardinal directions (COURT)
-            grab = re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(COURT|CRT|CT)(\W|$)", get)
+        elif crtPat1: #Single char cardinal directions (COURT)
+            grab = crtPat1
             new_addr = grab.group(1).strip(' ') + " COURT"
-        elif re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(COURT|CRT|CT)(\W|$)", get): #All (COURT)
-            grab = re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(COURT|CRT|CT)(\W|$)", get)
+        elif crtPat2: #All (COURT)
+            grab = crtPat2
             new_addr = grab.group(1).strip(' ') + " COURT"
 
-        elif re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(HEIGHTS|HTS)(\W|$)", get): #Single char cardinal directions (HEIGHTS)
-            grab = re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(HEIGHTS|HTS)(\W|$)", get)
+        elif htsPat1: #Single char cardinal directions (HEIGHTS)
+            grab = htsPat1
             new_addr = grab.group(1).strip(' ') + " HEIGHTS"
-        elif re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(HEIGHTS|HTS)(\W|$)", get): #All (HEIGHTS)
-            grab = re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(HEIGHTS|HTS)(\W|$)", get)
+        elif htsPat2: #All (HEIGHTS)
+            grab = htsPat2
             new_addr = grab.group(1).strip(' ') + " HEIGHTS"
 
-        elif re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(PARKWAY|PKWY)(\W|$)", get): #Single char cardinal directions (PARKWAY)
-            grab = re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(PARKWAY|PKWY)(\W|$)", get)
+        elif pwyPat1: #Single char cardinal directions (PARKWAY)
+            grab = pwyPat1
             new_addr = grab.group(1).strip(' ') + " PARKWAY"
-        elif re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(PARKWAY|PKWY)(\W|$)", get): #All (PARKWAY)
-            grab = re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(PARKWAY|PKWY)(\W|$)", get)
+        elif pwyPat2: #All (PARKWAY)
+            grab = pwyPat2
             new_addr = grab.group(1).strip(' ') + " PARKWAY"
 
-        elif re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(HIGHWAY|HWAY|HWY)(\W|$)", get): #Single char cardinal directions (HIGHWAY)
-            grab = re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(HIGHWAY|HWAY|HWY)(\W|$)", get)
+        elif hwyPat1: #Single char cardinal directions (HIGHWAY)
+            grab = hwyPat1
             new_addr = grab.group(1).strip(' ') + " HIGHWAY"
-        elif re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(HIGHWAY|HWAY|HWY)(\W|$)", get): #All (HIGHWAY)
-            grab = re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(HIGHWAY|HWAY|HWY)(\W|$)", get)
+        elif hwyPat2: #All (HIGHWAY)
+            grab = hwyPat2
             new_addr = grab.group(1).strip(' ') + " HIGHWAY"
 
-        elif re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(EXPRESSWAY|EXPWA|EXPWY|EXPY|EXP)(\W|$)", get): #Single char cardinal directions (EXPRESSWAY)
-            grab = re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(EXPRESSWAY|EXPWA|EXPWY|EXPY|EXP)(\W|$)", get)
+        elif expPat1: #Single char cardinal directions (EXPRESSWAY)
+            grab = expPat1
             new_addr = grab.group(1).strip(' ') + " EXPRESSWAY"
-        elif re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(EXPRESSWAY|EXPWA|EXPWY|EXPY|EXP)(\W|$)", get): #All (EXPRESSWAY)
-            grab = re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(EXPRESSWAY|EXPWA|EXPWY|EXPY|EXP)(\W|$)", get)
+        elif expPat2: #All (EXPRESSWAY)
+            grab = expPat2
             new_addr = grab.group(1).strip(' ') + " EXPRESSWAY"
 
-        elif re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(BROADWAY|BDWY)(\W|$)", get): #Single char cardinal directions (BROADWAY)
-            grab = re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(BROADWAY|BDWY)(\W|$)", get)
+        elif bwyPat1: #Single char cardinal directions (BROADWAY)
+            grab = bwyPat1
             new_addr = grab.group(1).strip(' ') + " BROADWAY"
-        elif re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(BROADWAY|BDWY)(\W|$)", get): #All (BROADWAY)
-            grab = re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(BROADWAY|BDWY)(\W|$)", get)
+        elif bwyPat2: #All (BROADWAY)
+            grab = bwyPat2
             new_addr = grab.group(1).strip(' ') + " BROADWAY"
 
-        elif re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(TURNPIKE|TPKE)(\W|$)", get): #Single char cardinal directions (TURNPIKE)
-            grab = re.search(r"(?!\d) ([NSEW])( ?\d+ ?| [A-Z]+ )(TURNPIKE|TPKE)(\W|$)", get)
+        elif tpkPat1: #Single char cardinal directions (TURNPIKE)
+            grab = tpkPat1
             new_addr = grab.group(1).strip(' ') + " TURNPIKE"
-        elif re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(TURNPIKE|TPKE)(\W|$)", get): #All (TURNPIKE)
-            grab = re.search(r"(?!\d)( (NORTH |SOUTH |EAST |WEST )?\d+ ?| ([A-Z][A-Z]+ )+)(TURNPIKE|TPKE)(\W|$)", get)
+        elif tpkPat2: #All (TURNPIKE)
+            grab = tpkPat2
             new_addr = grab.group(1).strip(' ') + " TURNPIKE"
 
         else:
@@ -171,3 +225,8 @@ class GeoLiberator:
         get = (self.addr).upper(); new_addr = '' #Uppercase and create new address to return
         get = (re.sub(r"[!#$%^*+=`~/]", ' ', get)).strip(' ') #Strip any anomalies
         get = re.sub(r"(?<=\d)(ND|RD|TH|RTH)", '', get) #Strip any char of ordinal numbers
+t1 = time.process_time_ns()
+total = t1 - t0
+if __name__ != "__main__":
+    print(f"Timestamp 1: {t0} n/s\nTimestamp 2: {t1} n/s")
+    print("Time elapsed:", total, "nanoseconds")
