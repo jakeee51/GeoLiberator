@@ -55,7 +55,7 @@ class GeoLiberator:
             return "WEST"
         else:
             return False
-    def getAddressNum(self, mode=0, log=False):
+    def getAddressNum(self, mode='', log=False):
         get = (self.addr).upper(); new_addr_num = '' #Uppercase and create new address to return
         get = (re.sub(r"[!#$%^*+=`~/]", ' ', get)).strip(' ') #Strip any anomalies
         get = re.sub(r"(?<=\d)(ND|RD|TH|RTH)", '', get) #Strip any char of ordinal numbers
@@ -68,20 +68,19 @@ class GeoLiberator:
             if re.search(fr"(^\d+(-\d+)?) (?!({sType}\.?))", get):
                 grab = re.search(fr"(^\d+(-\d+)?) (?!({sType}\.?))", get)
                 new_addr_num = grab.group(1)
-        if mode == 0 and log = True:
+        if mode == '' and log == True:
             print(new_addr_num)
-            return new_addr_num
         else: #Write to new or specfied file
             fileName = re.sub(r"\..+", '', mode)
             if fileName.isdigit() or re.search(r'[\/:*?"<>|]', fileName):
                 fileName = "newly_parsed_address_numbers"
-            if log != False: #Print to standard output as well
+            if log == True: #Print to standard output as well
                 print(new_addr_num)
             nf = open(f"{fileName}.txt", 'a')
             nf.write(new_addr_num + '\n')
             nf.close()
-            return new_addr_num
-    def getStreet(self, mode=0, log=False):
+        return new_addr_num
+    def getStreet(self, mode='', log=False):
         get = (self.addr).upper(); new_addr = '' #Uppercase and create new address to return
         get = (re.sub(r"[!#$%^*+=`~/]", ' ', get)).strip(' ') #Strip any anomalies
         get = re.sub(r"(?<=\d)(ND|RD|TH|RTH)", '', get) #Strip any char of ordinal numbers
@@ -103,19 +102,18 @@ class GeoLiberator:
                     new_addr = "AVENUE " + pat3.group(2)
                 else:
                     continue
-        if mode == 0 and log == True:
+        if mode == '' and log == True:
             print(new_addr)
-            return new_addr
         else: #Write to new or specfied file
             fileName = re.sub(r"\..+", '', mode)
             if fileName.isdigit() or re.search(r'[\/:*?"<>|]', fileName):
                 fileName = "newly_parsed_addresses"
-            if log != False: #Print to standard output as well
+            if log == True: #Print to standard output as well
                 print(new_addr)
             nf = open(f"{fileName}.txt", 'a')
             nf.write(new_addr + '\n')
             nf.close()
-            return new_addr
+        return new_addr
     def getAddress(self):
         get = (self.addr).upper(); new_addr = '' #Uppercase and create new address to return
         get = (re.sub(r"[!#$%^*+=`~/]", ' ', get)).strip(' ') #Strip any anomalies
