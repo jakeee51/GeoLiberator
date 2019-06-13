@@ -74,7 +74,7 @@ class GeoLiberator:
 
     def getAddressNum(self, log='', mode=False):
         get = (self.addr).upper(); new_addr_num = '' #Uppercase and create new address to return
-        get = (re.sub(r"[!#$%^*+=`~/]", ' ', get)).strip(' ') #Strip any anomalies
+        get = (re.sub(r"[!#$@%^*+=`~/]", ' ', get)).strip(' ') #Strip any anomalies
         get = re.sub(r"(?<=\d)(ND|RD|TH|RTH)", '', get) #Strip any char of ordinal numbers
         for sType in self.streetTypesAll:
             gANpat1 = re.search(fr"(?!\d+ ?{sType}(\W|$)\.?)(^\d+(-\d+)?)", get)
@@ -98,7 +98,7 @@ class GeoLiberator:
 
     def getStreet(self, log='', mode=False):
         get = (self.addr).upper(); new_street = '' #Uppercase and create new address to return
-        get = (re.sub(r"[!#$%^*+=`~/]", ' ', get)).strip(' ') #Strip any anomalies
+        get = (re.sub(r"[!#$@%^*+=`~/]", ' ', get)).strip(' ') #Strip any anomalies
         get = re.sub(r"(?<=\d)(ND|RD|TH|RTH)", '', get) #Strip any char of ordinal numbers
         for key in self.streetTypes:
             if new_street != '':
@@ -135,11 +135,14 @@ class GeoLiberator:
 
     def getAddress(self, log='', mode=False):
         get = (self.addr).upper(); new_addr = '' #Uppercase and create new address to return
-        get = (re.sub(r"[!#$%^*+=`~/]", ' ', get)).strip(' ') #Strip any anomalies
+        get = (re.sub(r"[!#$@%^*+=`~/]", ' ', get)).strip(' ') #Strip any anomalies
         get = re.sub(r"(?<=\d)(ND|RD|TH|RTH)", '', get) #Strip any char of ordinal numbers
         gS = GeoLiberator(get).getStreet()
         gAN = GeoLiberator(get).getAddressNum()
-
+        if gS != "OTHER" and gAN != "OTHER":
+            new_addr = gAN + ' ' + gS
+        else:
+            new_addr = "OTHER"
         if log == '' and mode == True:
             print(new_addr)
         elif log != '': #Write to new or specfied file
