@@ -103,19 +103,19 @@ class GeoLiberator:
             if new_street != '':
                 break
             for sType in self.streetTypes[key]:
-                gSpat1 = re.search(fr"(?!\d)([NSEW])( ?\d+ ?| [A-Z]+ )({sType})\.?(\W|$)", get)
-                gSpat2 = re.search(fr"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?\d+ ?|([A-Z][A-Z]+ )+)({sType})\.?((?=\W)|$)", get)
-                gSpat3 = re.search(fr"(?!\d)(AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z])[ ,-]", get)
-                if gSpat1:
-                    if gSpat1.group(3) in self.streetTypes[key]:
-                        new_street = self.getCompass(gSpat1.group(1)) + ' ' + gSpat1.group(2).strip(' ') + f" {key}"
+                getStreetPattern1 = re.search(fr"(?!\d)([NSEW])( ?\d+ ?| [A-Z]+ )({sType})\.?(\W|$)", get)
+                getStreetPattern2 = re.search(fr"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?\d+ ?|([A-Z][A-Z]+ )+)({sType})\.?((?=\W)|$)", get)
+                getStreetPattern3 = re.search(fr"(?!\d)(AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z])[ ,-]", get)
+                if getStreetPattern1:
+                    if getStreetPattern1.group(3) in self.streetTypes[key]:
+                        new_street = self.getCompass(getStreetPattern1.group(1)) + ' ' + getStreetPattern1.group(2).strip(' ') + f" {key}"
                         break
-                elif gSpat2:
-                    if gSpat2.group(4) in self.streetTypes[key]:
-                        new_street = gSpat2.group(1).strip(' ') + f" {key}"
+                elif getStreetPattern2:
+                    if getStreetPattern2.group(4) in self.streetTypes[key]:
+                        new_street = getStreetPattern2.group(1).strip(' ') + f" {key}"
                         break
-                elif gSpat3:
-                    new_street = "AVENUE " + gSpat3.group(2)
+                elif getStreetPattern3:
+                    new_street = "AVENUE " + getStreetPattern3.group(2)
                     break
         if new_street == '':
             new_street = "OTHER"
