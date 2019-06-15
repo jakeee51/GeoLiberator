@@ -41,7 +41,7 @@ class GeoLiberator:
                    "PLACE","PLAC","PLCE","PL","PLC",
                    "BOULEVARD","BLVD","BOUL","BO",
                    "LANE","LN","COURT","CRT","CT",
-                   "HEIGHTS","HTS","PARKWAY","PKWY",
+                   "HEIGHTS","HTS","PARKWAY","PKWY","PWY",
                    "HIGHWAY","HWAY","HWY",
                    "EXPRESSWAY","EXPWA","EXPWY","EXPY","EXP",
                    "BROADWAY","BDWY","BWY","TURNPIKE","TPKE"]
@@ -54,7 +54,7 @@ class GeoLiberator:
                             "LANE": ["LANE","LN"],
                             "COURT": ["COURT","CRT","CT"],
                             "HEIGHTS": ["HEIGHTS","HTS"],
-                            "PARKWAY": ["PARKWAY","PKWY"],
+                            "PARKWAY": ["PARKWAY","PKWY", "PWY"],
                             "HIGHWAY": ["HIGHWAY","HWAY","HWY"],
                             "EXPRESSWAY": ["EXPRESSWAY","EXPWA","EXPWY","EXPY","EXP"],
                             "BROADWAY": ["BROADWAY","BDWY","BWY"],
