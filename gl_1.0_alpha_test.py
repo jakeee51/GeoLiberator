@@ -7,7 +7,7 @@ mSet = True
 ##    lines = f.readlines()
 ##    for line in lines:
 ##        adr = GeoLiberator(str(line))
-##        adr.getAddress(mode=mSet)
+##        adr.getStreet(mode=mSet)
 
 ##cardinal_trials = ['123 N 52 ST', '123 N52 STR', '123 N 52STRE',
 ##                  '123 N52ST', '123 N 52 STREET', '123 N MAIN STREET']
