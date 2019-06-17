@@ -2,8 +2,8 @@
 '''
 Author: David J. Morfe
 Module Name: GeoLiberator
-Functionality Purpose: Intake address data and apply data quality uniformity
-6/14/19
+Functionality Purpose: Intake address data and apply data quality uniformity(intantiate data governance)
+6/17/19
 '''
 #Alpha 1.0
 
@@ -11,7 +11,7 @@ import re
 import time
 t0 = time.process_time_ns()
 
-#Account for '&' and Saint(ST) and Fort(FT) and 'BROADWAY'
+#Account for '&' and 'STS'
 #Option to append borough, state, zip, based on argument
 
 class AddressError(BaseException):
@@ -34,50 +34,47 @@ class GeoLiberator:
     
     def __init__(self, addr):
         self.addr = str(addr)
-        self.streetTypesAll = ["STREET","STRE","STR","ST",
-                               "AVENUE","AVEN","AVE","AV","AE",
-                               "ROAD","RD","RO","DRIVE","DR",
-                               "PLACE","PLAC","PLCE","PL","PLC",
-                               "BOULEVARD","BLVD","BOUL","BO",
-                               "LANE","LN","COURT","CRT","CT",
-                               "HEIGHTS","HTS","PARKWAY","PKWY","PWY",
-                               "HIGHWAY","HWAY","HWY",
-                               "EXPRESSWAY","EXPWA","EXPWY","EXPY","EXP",
-                               "BROADWAY","BDWY","BWY","TURNPIKE","TPKE",
-                               "SQUARE","SQ","LOOP","CIRCLE","CIR",
-                               "PLAZA","PLZ","CONCOURSE","CONC",
-                               "TERRACE","TER","WAY","PARK","OVAL",
-                               "CRESCENT","CRES","CLOSE","CLOS",
-                               "VILLAGE","VLG","RUDGE","RDG",
-                               "COVE","CV","TRAIL","TRL","GREEN","GRN",
-                               "CAMP","CP","ROW","PATH",
-                               "ALLEY","ALY","PROMENADE","PROM",
-                               "GARDENS","GDNS","COURSE","CRSE",
-                               "SLIP","ESPLANADE","ESPL",
-                               "HILL","HL","FREEWAY","FWY","EST"]
         self.streetTypes = {"STREET": ["STREET","STRE","STR","ST"],
                             "AVENUE": ["AVENUE","AVEN","AVE","AV","AE"],
                             "ROAD": ["ROAD","RD","RO"],
-                            "DRIVE": ["DRIVE","DR"],
+                            "DRIVE": ["DRIVE","DRIV","DR"],
                             "PLACE": ["PLACE","PLAC","PLCE","PL","PLC"],
-                            "BOULEVARD": ["BOULEVARD","BLVD","BOUL","BO"],
-                            "LANE": ["LANE","LN"],
+                            "BOULEVARD": ["BOULEVARD","BLVD","BOUL","BLV","BO"],
                             "COURT": ["COURT","CRT","CT"],
                             "HEIGHTS": ["HEIGHTS","HTS"],
-                            "PARKWAY": ["PARKWAY","PKWY", "PWY"],
+                            "PARKWAY": ["PARKWAY","PKWAY","PKWY","PWY","PKY"],
                             "HIGHWAY": ["HIGHWAY","HWAY","HWY"],
-                            "EXPRESSWAY": ["EXPRESSWAY","EXPWA","EXPWY","EXPY","EXP"],
                             "BROADWAY": ["BROADWAY","BDWY","BWY"],
+                            "EXPRESSWAY": ["EXPRESSWAY","EXPRESWY","EXPRESWAY","EXPREWAY","EXPWA","EXPWY","EXPY","EXWY","EXP"],
+                            "PLAZA": ["PLAZA","PLAZ","PLZA","PLZ"],
+                            "CONCOURSE": ["CONCOURSE","CONC","CNCRS","CON","CO"],
+                            "TERRACE": ["TERRACE","TERR","TER","TE"],
+                            "CRESCENT": ["CRESCENT","CRESCNT","CRES"],
+                            "ALLEY": ["ALLEY","ALY"],
+                            "GARDENS": ["GARDENS","GDNS"],
+                            "ESPLANADE": ["ESPLANADE","ESPL"],
+                            "PARK": ["PARK","PRK","PK"],
+                            "HILL": ["HILL","HL"],
+                            "LANE": ["LANE","LN"],
+                            "PROMENADE": ["PROMENADE","PROM"],
+                            "COURSE": ["COURSE","CRSE"],
+                            "FREEWAY": ["FREEWAY","FWY"],
                             "TURNPIKE": ["TURNPIKE","TPKE"],
-                            "SQUARE": ["SQ"], "LOOP": ["LOOP"], "CIRCLE": ["CIR"],
-                            "PLAZA": ["PLZ"], "CONCOURSE": ["CONC"], "TERRACE": ["TER"],
-                            "WAY": ["WAY"], "PARK": ["PARK"], "OVAL": ["OVAL"],
-                            "CRESCENT": ["CRES"], "CLOSE": ["CLOS"], "VILLAGE": ["VLG"],
-                            "RUDGE": ["RDG"], "COVE": ["CV"], "TRAIL": ["TRL"],
-                            "GREEN": ["GRN"],"CAMP": ["CP"],"ROW": ["ROW"],
-                            "PATH": ["PATH"], "ALLEY": ["ALY"], "PROMENADE": ["PROM"],
-                            "GARDENS": ["GDNS"], "COURSE": ["CRSE"], "SLIP": ["SLIP"],
-                            "ESPLANADE": ["ESPL"], "HILL": ["HL"], "FREEWAY": ["FWY"], "EST": ["EST"]}
+                            "SQUARE": ["SQUARE","SQ"],
+                            "CIRCLE": ["CIRCLE","CIR"],
+                            "CLOSE": ["CLOSE","CLOS"],
+                            "VILLAGE": ["VILLAGE","VLG"],
+                            "RIDGE": ["RIDGE","RDG"],
+                            "COVE": ["COVE","CV"],
+                            "TRAIL": ["TRAIL","TRL"],
+                            "GREEN": ["GREEN","GRN"],
+                            "CAMP": ["CAMP","CP"],
+                            "SLIP": ["SLIP"],"LOOP": ["LOOP"], "WAY": ["WAY"],"EST": ["EST"],"ROW": ["ROW"],"OVAL": ["OVAL"],"PATH": ["PATH"]}
+        hold = ''
+        for typ in self.streetTypes:
+            hold += re.sub(r"[\[\]' ]", '', str(self.streetTypes[typ])) + ','
+        self.streetTypesAll = list(hold.strip(',').split(','))
+
     def getCompass(self, direc):
         if 'N' == direc:
             return "NORTH"
@@ -123,8 +120,8 @@ class GeoLiberator:
                 break
             sType = '|'.join(val)
             getStreetPattern1 = re.search(fr"(?!\d)?([NSEW])(\.? ?\d+ ?| [A-Z]+ )({sType})\.?(\W|$)", get)
-            getStreetPattern2 = re.search(fr"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?\d+ ?|([A-Z][A-Z]+ )+)({sType})\.?((?=\W)|$)", get)
-            getStreetPattern3 = re.search(fr"(?!\d)?(AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z])([ ,-]|$)", get)
+            getStreetPattern2 = re.search(fr"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?\d+ ?|([A-Z]+ )+)({sType})\.?((?=\W)|$)", get)
+            getStreetPattern3 = re.search(fr"(?!\d)?(AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF THE [A-Z]+)([ ,-]|$)", get)
             if getStreetPattern1:
                 if getStreetPattern1.group(3) in self.streetTypes[key]:
                     new_street = self.getCompass(getStreetPattern1.group(1)) + ' ' + getStreetPattern1.group(2).strip(' ') + f" {key}"
@@ -136,6 +133,8 @@ class GeoLiberator:
             elif getStreetPattern3:
                 new_street = "AVENUE " + getStreetPattern3.group(2)
                 break
+        new_street = re.sub(r"^FT\W| FT\W", "FORT ", new_street)
+        new_street = re.sub(r"^ST\W| ST\W", "SAINT ", new_street)
         if new_street == '':
             new_street = "OTHER"
         if log == '' and mode == True: #Print to standard output and return value

@@ -3,11 +3,25 @@ import time
 t0 = time.process_time()
 mSet = True
 
+##data = pd.read_excel("NYEM_Staging.xlsx")
+##for i in data.index:
+##    if data["addr1"][i] != "OTHER" and data["addr2"][i] != "OTHER":
+##        if data["addr1"][i] == data["addr2"][i]:
+##            print(data["addr1"][i])
+##        else:
+##            print("DIFFER")
+##    elif data["addr1"][i] != "OTHER" and data["addr2"][i] == "OTHER":
+##        print(data["addr1"][i])
+##    elif data["addr2"][i] != "OTHER" and data["addr1"][i] == "OTHER":
+##        print(data["addr2"][i])
+##    else:
+##        print("OTHER")
+
 ##with open("hold.txt") as f:
 ##    lines = f.readlines()
 ##    for line in lines:
 ##        adr = GeoLiberator(str(line))
-##        adr.getStreet(mode=mSet)
+##        adr.getAddress(mode=mSet)
 
 ##cardinal_trials = ['123 N 52 ST', '123 N52 STR', '123 N 52STRE',
 ##                  '123 N52ST', '123 N 52 STREET', '123 N MAIN STREET']
