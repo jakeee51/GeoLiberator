@@ -11,7 +11,9 @@ import re
 import time
 t0 = time.process_time_ns()
 
-#Account for '&' and 'STS'
+#Re-parse Facility Address
+#Analyze "DIFFER's"
+#Account for '&' and 'STS' and 'ordinal #s'
 #Option to append borough, state, zip, based on argument
 
 class AddressError(BaseException):
@@ -34,8 +36,7 @@ class GeoLiberator:
     
     def __init__(self, addr):
         self.addr = str(addr)
-        self.streetTypes = {"STREET": ["STREET","STRE","STR","ST"],
-                            "AVENUE": ["AVENUE","AVEN","AVE","AV","AE"],
+        self.streetTypes = {"AVENUE": ["AVENUE","AVEN","AVE","AV","AE"],
                             "ROAD": ["ROAD","RD","RO"],
                             "DRIVE": ["DRIVE","DRIV","DR"],
                             "PLACE": ["PLACE","PLAC","PLCE","PL","PLC"],
@@ -44,7 +45,6 @@ class GeoLiberator:
                             "HEIGHTS": ["HEIGHTS","HTS"],
                             "PARKWAY": ["PARKWAY","PKWAY","PKWY","PWY","PKY"],
                             "HIGHWAY": ["HIGHWAY","HWAY","HWY"],
-                            "BROADWAY": ["BROADWAY","BDWY","BWY"],
                             "EXPRESSWAY": ["EXPRESSWAY","EXPRESWY","EXPRESWAY","EXPREWAY","EXPWA","EXPWY","EXPY","EXWY","EXP"],
                             "PLAZA": ["PLAZA","PLAZ","PLZA","PLZ"],
                             "CONCOURSE": ["CONCOURSE","CONC","CNCRS","CON","CO"],
@@ -69,7 +69,22 @@ class GeoLiberator:
                             "TRAIL": ["TRAIL","TRL"],
                             "GREEN": ["GREEN","GRN"],
                             "CAMP": ["CAMP","CP"],
+                            "STREET": ["STREET","STRE","STR","ST"],
                             "SLIP": ["SLIP"],"LOOP": ["LOOP"], "WAY": ["WAY"],"EST": ["EST"],"ROW": ["ROW"],"OVAL": ["OVAL"],"PATH": ["PATH"]}
+        self.wordTypes = ['ARCADIA', 'ATLANTIC', 'ATLANTIC COMMONS', 'BATH', 'BAYSIDE',
+                            'BAYVIEW', 'BAYWAY', 'BCH RESERVATION', 'BOARDWALK', 'BOARDWALK', 'BOARDWALK',
+                            'BOULEVARD', 'BOWERY', 'BRANT', 'BRIGHTON 1', 'BRIGHTON 2', 'BRIGHTON 3',
+                            'BRIGHTON 4', 'BRIGHTON 7', 'BROADWAY ATRIUM', 'CENTRE MALL', 'CHESTER',
+                            'CLINTON', 'CROSS BRONX EP SR', 'CROSS BRONX EP SR', 'CUMBERLAND', 'DEAUVILLE',
+                            'DEVON', 'ESPLANADE', 'ESSEX', 'FLEET', 'FULTON', 'GOTHAM', 'GREENWAY', 'GREENWAY',
+                            'GREENWICH MEWS', 'HAMILTON', 'HILLCREST', 'HUDSON', 'IRVING', 'JAMAICA', 'JONES',
+                            'KILDARE', 'KINGSBOROUGH 2', 'KINGSBOROUGH 3', 'KINGSBOROUGH 4', 'KINGSBOROUGH 5',
+                            'KINGSBOROUGH 6', 'KINGSBOROUGH 7', 'LAFAYETTE', 'LINCOLN', 'MARION', 'MONUMENT',
+                            'ELLIOTT', 'OXFORD', 'NAVY', 'NEPTUNE', 'NEW ENGLAND THRUWAY', 'NEWPORT',
+                            'NORTH RIVER PIERS', 'NORTHERN BL SR', 'OCEAN DRIVEWAY', 'OLIVE', 'PELHAM',
+                            'PINEAPPLE', 'PLOUGHMANS BUSH', 'POMANDER', 'QUEENS', 'QUEENS MIDTOWN EP SR',
+                            'QUEENS MIDTOWN EP SR', 'REGAL', 'ROOSEVELT', 'SEA BREEZE', 'STAGG', 'SUFFOLK',
+                            'TEN EYCK', 'UTICA', 'WASHINGTON', 'WASHINGTON MEWS', 'BROADWAY', 'BRDWY', 'BDWY', 'BWY']
         hold = ''
         for typ in self.streetTypes:
             hold += re.sub(r"[\[\]' ]", '', str(self.streetTypes[typ])) + ','
@@ -115,13 +130,22 @@ class GeoLiberator:
         get = (self.addr).upper(); new_street = '' #Uppercase and create new address to return
         get = (re.sub(r"[\t!#$@%^*+=`~/]| +", ' ', get)).strip(' ') #Strip any anomalies
         get = re.sub(r"(?<=\d)(ND|RD|TH|RTH)", '', get) #Strip any char of ordinal numbers
+        saintFlag = False
+        for stre in self.wordTypes:
+            getStreet = re.search(fr"(?!\d)\W({stre})(\W|$)", get)
+            if getStreet:
+                new_street = getStreet.group(1)
+        if re.search(r"(\W|^)(ST|SNT)\W", get):
+            re.sub(r"(\W|^)(ST|SNT)\W", ' ', get)
+            saintFlag = True
+        print(get)
         for key, val in self.streetTypes.items():
             if new_street != '':
                 break
             sType = '|'.join(val)
             getStreetPattern1 = re.search(fr"(?!\d)?([NSEW])(\.? ?\d+ ?| [A-Z]+ )({sType})\.?(\W|$)", get)
-            getStreetPattern2 = re.search(fr"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?\d+ ?|([A-Z]+ )+)({sType})\.?((?=\W)|$)", get)
-            getStreetPattern3 = re.search(fr"(?!\d)?(AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF THE [A-Z]+)([ ,-]|$)", get)
+            getStreetPattern2 = re.search(fr"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?[^\W]\d+ ?|([A-Z]+ )+)({sType})\.?((?=\W)|$)", get)
+            getStreetPattern3 = re.search(fr"(?!\d)?(AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF ([A-Z]+)? [A-Z]+)([ ,-]|$)", get)
             if getStreetPattern1:
                 if getStreetPattern1.group(3) in self.streetTypes[key]:
                     new_street = self.getCompass(getStreetPattern1.group(1)) + ' ' + getStreetPattern1.group(2).strip(' ') + f" {key}"
@@ -134,7 +158,8 @@ class GeoLiberator:
                 new_street = "AVENUE " + getStreetPattern3.group(2)
                 break
         new_street = re.sub(r"^FT\W| FT\W", "FORT ", new_street)
-        new_street = re.sub(r"^ST\W| ST\W", "SAINT ", new_street)
+        if saintFlag == True:
+            new_street = re.sub(r"(?!\d)?\W", " SAINT ", new_street)
         if new_street == '':
             new_street = "OTHER"
         if log == '' and mode == True: #Print to standard output and return value
@@ -142,7 +167,7 @@ class GeoLiberator:
         elif log != '': #Write to new or specfied file
             fileName = re.sub(r"\..+", '', log)
             if fileName.isdigit() or re.search(r'[\/:*?"<>|]', fileName):
-                fileName = "newly_parsed_addresses"
+                fileName = "newly_parsed_streets"
             if mode == True: #Print to standard output as well
                 print(new_street)
             nf = open(f"{fileName}.txt", 'a')
