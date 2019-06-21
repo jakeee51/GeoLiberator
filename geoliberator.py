@@ -3,17 +3,16 @@
 Author: David J. Morfe
 Module Name: GeoLiberator
 Functionality Purpose: Intake address data and apply data quality uniformity(intantiate data governance)
-6/17/19
+6/21/19
 '''
-#Alpha 1.0
+#Alpha 1.3
 
 import re
 import time
 t0 = time.process_time_ns()
 
-#Re-parse Facility Address
 #Analyze "DIFFER's"
-#Account for '&' and 'STS' and 'ordinal #s'
+#Account for '&' and 'STS'
 #Option to append borough, state, zip, based on argument
 
 class AddressError(BaseException):
@@ -36,8 +35,8 @@ class GeoLiberator:
     
     def __init__(self, addr):
         self.addr = str(addr)
-        self.streetTypes = {"AVENUE": ["AVENUE","AVEN","AVE","AV","AE"],
-                            "ROAD": ["ROAD","RD","RO"],
+        self.streetTypes = {"ROAD": ["ROAD","RD","RO"],
+                            "AVENUE": ["AVENUE","AVEN","AVE","AV","AE"],
                             "DRIVE": ["DRIVE","DRIV","DR"],
                             "PLACE": ["PLACE","PLAC","PLCE","PL","PLC"],
                             "BOULEVARD": ["BOULEVARD","BLVD","BOUL","BLV","BO"],
@@ -45,7 +44,7 @@ class GeoLiberator:
                             "HEIGHTS": ["HEIGHTS","HTS"],
                             "PARKWAY": ["PARKWAY","PKWAY","PKWY","PWY","PKY"],
                             "HIGHWAY": ["HIGHWAY","HWAY","HWY"],
-                            "EXPRESSWAY": ["EXPRESSWAY","EXPRESWY","EXPRESWAY","EXPREWAY","EXPWA","EXPWY","EXPY","EXWY","EXP"],
+                            "EXPRESSWAY": ["EXPRESSWAY","EXPRESWY","EXPRESWAY","EXPREWAY","EXPWA","EXPWY","EXPY","EXWY","EWY","EXP"],
                             "PLAZA": ["PLAZA","PLAZ","PLZA","PLZ"],
                             "CONCOURSE": ["CONCOURSE","CONC","CNCRS","CON","CO"],
                             "TERRACE": ["TERRACE","TERR","TER","TE"],
@@ -82,7 +81,7 @@ class GeoLiberator:
                             'KINGSBOROUGH 6', 'KINGSBOROUGH 7', 'LAFAYETTE', 'LINCOLN', 'MARION', 'MONUMENT',
                             'ELLIOTT', 'OXFORD', 'NAVY', 'NEPTUNE', 'NEW ENGLAND THRUWAY', 'NEWPORT',
                             'NORTH RIVER PIERS', 'NORTHERN BL SR', 'OCEAN DRIVEWAY', 'OLIVE', 'PELHAM',
-                            'PINEAPPLE', 'PLOUGHMANS BUSH', 'POMANDER', 'QUEENS', 'QUEENS MIDTOWN EP SR',
+                            'PINEAPPLE', 'PLOUGHMANS BUSH', 'POMANDER', 'QUEENS MIDTOWN EP SR',
                             'QUEENS MIDTOWN EP SR', 'REGAL', 'ROOSEVELT', 'SEA BREEZE', 'STAGG', 'SUFFOLK',
                             'TEN EYCK', 'UTICA', 'WASHINGTON', 'WASHINGTON MEWS', 'BROADWAY', 'BRDWY', 'BDWY', 'BWY']
         hold = ''
@@ -101,6 +100,37 @@ class GeoLiberator:
             return "WEST"
         else:
             return False
+
+    def searchCycle(self, g, sF):
+        new_find = ''
+        for stre in self.wordTypes: #Check for word/name street types
+            getStreet = re.search(fr"(?!\d)?\W?({stre})(\W|$)", g)
+            if getStreet:
+                new_find = getStreet.group(1)
+                break
+        for key, val in self.streetTypes.items():
+            if new_find != '':
+                break
+            sType = '|'.join(val)
+            getStreetPattern1 = re.search(fr"(?!\d)?(\W|^)([NSEW])(\.? ?\d+(ST)? ?| ([A-Z]+ )+)({sType})\.?(?=\W|$)", g)
+            getStreetPattern2 = re.search(fr"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?[^\W]?\d+(ST)? ?|([A-Z]+ )+)({sType})\.?((?=\W)|$)", g)
+            getStreetPattern3 = re.search(fr"(?!\d)?(AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF ([A-Z]+ )?[A-Z]+)(?=\W|$)", g)
+            if getStreetPattern1:
+                if getStreetPattern1.group(6) in self.streetTypes[key]:
+                    new_find = self.getCompass(getStreetPattern1.group(2)) + ' ' + getStreetPattern1.group(3).strip(' ') + f" {key}"
+                    break
+            elif getStreetPattern2:
+                if getStreetPattern2.group(5) in self.streetTypes[key]:
+                    new_find = getStreetPattern2.group(1).strip(' ') + f" {key}"
+                    break
+            elif getStreetPattern3:
+                new_find = "AVENUE " + getStreetPattern3.group(2)
+                break
+        if sF == True and new_find != '':
+            new_find = "SAINT " + str(new_find)
+        if new_find == '':
+            new_find = "OTHER"
+        return new_find
 
     def getAddressNum(self, log='', mode=False):
         get = (self.addr).upper(); new_addr_num = '' #Uppercase and create new address to return
@@ -127,41 +157,19 @@ class GeoLiberator:
         return new_addr_num
 
     def getStreet(self, log='', mode=False):
-        get = (self.addr).upper(); new_street = '' #Uppercase and create new address to return
+        get = (self.addr).upper(); new_street = ''; saintFlag = False #Uppercase and create new address to return
         get = (re.sub(r"[\t!#$@%^*+=`~/]| +", ' ', get)).strip(' ') #Strip any anomalies
         get = re.sub(r"(?<=\d)(ND|RD|TH|RTH)", '', get) #Strip any char of ordinal numbers
-        saintFlag = False
-        for stre in self.wordTypes:
-            getStreet = re.search(fr"(?!\d)\W({stre})(\W|$)", get)
-            if getStreet:
-                new_street = getStreet.group(1)
         if re.search(r"(\W|^)(ST|SNT)\W", get):
-            re.sub(r"(\W|^)(ST|SNT)\W", ' ', get)
+            get1 = re.sub(r"(\W|^)(ST|SNT)\W", ' ', get)
             saintFlag = True
-        print(get)
-        for key, val in self.streetTypes.items():
-            if new_street != '':
-                break
-            sType = '|'.join(val)
-            getStreetPattern1 = re.search(fr"(?!\d)?([NSEW])(\.? ?\d+ ?| [A-Z]+ )({sType})\.?(\W|$)", get)
-            getStreetPattern2 = re.search(fr"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?[^\W]\d+ ?|([A-Z]+ )+)({sType})\.?((?=\W)|$)", get)
-            getStreetPattern3 = re.search(fr"(?!\d)?(AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF ([A-Z]+)? [A-Z]+)([ ,-]|$)", get)
-            if getStreetPattern1:
-                if getStreetPattern1.group(3) in self.streetTypes[key]:
-                    new_street = self.getCompass(getStreetPattern1.group(1)) + ' ' + getStreetPattern1.group(2).strip(' ') + f" {key}"
-                    break
-            elif getStreetPattern2:
-                if getStreetPattern2.group(4) in self.streetTypes[key]:
-                    new_street = getStreetPattern2.group(1).strip(' ') + f" {key}"
-                    break
-            elif getStreetPattern3:
-                new_street = "AVENUE " + getStreetPattern3.group(2)
-                break
-        new_street = re.sub(r"^FT\W| FT\W", "FORT ", new_street)
-        if saintFlag == True:
-            new_street = re.sub(r"(?!\d)?\W", " SAINT ", new_street)
-        if new_street == '':
-            new_street = "OTHER"
+            new_street = self.searchCycle(get1, saintFlag)
+        if new_street == "OTHER":
+            saintFlag = False
+        new_street = self.searchCycle(get, saintFlag)
+        new_street = re.sub(r"^FT\W| FT\W", "FORT ", new_street) #Replace 'FT' with 'FORT'
+        new_street = re.sub(r"(?<=1)ST", '', new_street) #Strip 1st ordinal number
+
         if log == '' and mode == True: #Print to standard output and return value
             print(new_street)
         elif log != '': #Write to new or specfied file
