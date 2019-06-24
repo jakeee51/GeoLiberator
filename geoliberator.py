@@ -3,15 +3,14 @@
 Author: David J. Morfe
 Module Name: GeoLiberator
 Functionality Purpose: Intake address data and apply data quality uniformity(intantiate data governance)
-6/21/19
+6/24/19
 '''
-#Alpha 1.3
+#Alpha 1.4
 
 import re
 import time
 t0 = time.process_time_ns()
 
-#Analyze "DIFFER's"
 #Account for '&' and 'STS'
 #Option to append borough, state, zip, based on argument
 
@@ -42,32 +41,24 @@ class GeoLiberator:
                             "BOULEVARD": ["BOULEVARD","BLVD","BOUL","BLV","BO"],
                             "COURT": ["COURT","CRT","CT"],
                             "HEIGHTS": ["HEIGHTS","HTS"],
-                            "PARKWAY": ["PARKWAY","PKWAY","PKWY","PWY","PKY"],
+                            "PARKWAY": ["PARKWAY","PKWAY","PKWY","PWAY","PWY","PKY"],
                             "HIGHWAY": ["HIGHWAY","HWAY","HWY"],
                             "EXPRESSWAY": ["EXPRESSWAY","EXPRESWY","EXPRESWAY","EXPREWAY","EXPWA","EXPWY","EXPY","EXWY","EWY","EXP"],
                             "PLAZA": ["PLAZA","PLAZ","PLZA","PLZ"],
                             "CONCOURSE": ["CONCOURSE","CONC","CNCRS","CON","CO"],
                             "TERRACE": ["TERRACE","TERR","TER","TE"],
                             "CRESCENT": ["CRESCENT","CRESCNT","CRES"],
-                            "ALLEY": ["ALLEY","ALY"],
-                            "GARDENS": ["GARDENS","GDNS"],
-                            "ESPLANADE": ["ESPLANADE","ESPL"],
-                            "PARK": ["PARK","PRK","PK"],
-                            "HILL": ["HILL","HL"],
-                            "LANE": ["LANE","LN"],
-                            "PROMENADE": ["PROMENADE","PROM"],
-                            "COURSE": ["COURSE","CRSE"],
-                            "FREEWAY": ["FREEWAY","FWY"],
-                            "TURNPIKE": ["TURNPIKE","TPKE"],
-                            "SQUARE": ["SQUARE","SQ"],
-                            "CIRCLE": ["CIRCLE","CIR"],
-                            "CLOSE": ["CLOSE","CLOS"],
-                            "VILLAGE": ["VILLAGE","VLG"],
-                            "RIDGE": ["RIDGE","RDG"],
-                            "COVE": ["COVE","CV"],
-                            "TRAIL": ["TRAIL","TRL"],
-                            "GREEN": ["GREEN","GRN"],
-                            "CAMP": ["CAMP","CP"],
+                            "ALLEY": ["ALLEY","ALY"], "GARDENS": ["GARDENS","GDNS"],
+                            "ESPLANADE": ["ESPLANADE","ESPL"], "PARK": ["PARK","PRK","PK"],
+                            "HILL": ["HILL","HL"], "LANE": ["LANE","LN"],
+                            "PROMENADE": ["PROMENADE","PROM"], "COURSE": ["COURSE","CRSE"],
+                            "FREEWAY": ["FREEWAY","FWY"], "TURNPIKE": ["TURNPIKE","TPKE"],
+                            "SQUARE": ["SQUARE","SQ"], "CIRCLE": ["CIRCLE","CIR"],
+                            "CLOSE": ["CLOSE","CLOS"], "VILLAGE": ["VILLAGE","VLG"],
+                            "RIDGE": ["RIDGE","RDG"], "COVE": ["COVE","CV"],
+                            "TRAIL": ["TRAIL","TRL"], "GREEN": ["GREEN","GRN"],
+                            "CAMP": ["CAMP","CP"], "PUBLIC SCHOOL": ["PS","P.S"],
+                            "STATION": ["STAT","STA"],
                             "STREET": ["STREET","STRE","STR","ST"],
                             "SLIP": ["SLIP"],"LOOP": ["LOOP"], "WAY": ["WAY"],"EST": ["EST"],"ROW": ["ROW"],"OVAL": ["OVAL"],"PATH": ["PATH"]}
         self.wordTypes = ['ARCADIA', 'ATLANTIC', 'ATLANTIC COMMONS', 'BATH', 'BAYSIDE',
@@ -83,7 +74,7 @@ class GeoLiberator:
                             'NORTH RIVER PIERS', 'NORTHERN BL SR', 'OCEAN DRIVEWAY', 'OLIVE', 'PELHAM',
                             'PINEAPPLE', 'PLOUGHMANS BUSH', 'POMANDER', 'QUEENS MIDTOWN EP SR',
                             'QUEENS MIDTOWN EP SR', 'REGAL', 'ROOSEVELT', 'SEA BREEZE', 'STAGG', 'SUFFOLK',
-                            'TEN EYCK', 'UTICA', 'WASHINGTON', 'WASHINGTON MEWS', 'BROADWAY', 'BRDWY', 'BDWY', 'BWY']
+                            'TEN EYCK', 'UTICA', 'WASHINGTON', 'WASHINGTON MEWS', {'BROADWAY': ['BRDWY', 'BDWY', 'BWAY', 'BWY']}]
         hold = ''
         for typ in self.streetTypes:
             hold += re.sub(r"[\[\]' ]", '', str(self.streetTypes[typ])) + ','
@@ -103,11 +94,17 @@ class GeoLiberator:
 
     def searchCycle(self, g, sF):
         new_find = ''
-        for stre in self.wordTypes: #Check for word/name street types
-            getStreet = re.search(fr"(?!\d)?\W?({stre})(\W|$)", g)
-            if getStreet:
-                new_find = getStreet.group(1)
-                break
+        if sF == False:
+            for stre in self.wordTypes: #Check for word/name street types
+                getStreet = re.search(fr"(?!\d)?(\W|^)({stre})(\W|$)", g)
+                if type(stre) == dict:
+                    streB = '|'.join(stre['BROADWAY'])
+                    if re.search(fr"(?!\d)?\W?({streB})(\W|$)", g):
+                        new_find = "BROADWAY"
+                        break
+                if getStreet:
+                    new_find = getStreet.group(1)
+                    break
         for key, val in self.streetTypes.items():
             if new_find != '':
                 break
@@ -136,13 +133,13 @@ class GeoLiberator:
         get = (self.addr).upper(); new_addr_num = '' #Uppercase and create new address to return
         get = (re.sub(r"[\t!#$@%^*+=`~/]| +", ' ', get)).strip(' ') #Strip any anomalies
         get = re.sub(r"(?<=\d)(ND|RD|TH|RTH)", '', get) #Strip any char of ordinal numbers
-        for sType in self.streetTypesAll:
-            gANpat1 = re.search(fr"(?!\d+ ?{sType}(\W|$)\.?)(^\d+(-\d+)?)", get)
-            if gANpat1 == None:
-                new_addr_num = "OTHER"
-                break
-            elif gANpat1:
-                new_addr_num = gANpat1.group()
+        for key, val in self.streetTypes.items():
+            sType = '|'.join(val)
+            gANpat1 = re.search(fr"(^\d+([- ]\d+)?)(?= (\d+ ?|[A-Z]+ )({sType})\.?(\W|$))", get)
+            if gANpat1:
+                new_addr_num = gANpat1.group().replace(' ', '-')
+        if new_addr_num == '':
+            new_addr_num = "OTHER"
         if log == '' and mode == True: #Print to standard output and return value
             print(new_addr_num)
         elif log != '': #Write to new or specfied file
@@ -154,19 +151,21 @@ class GeoLiberator:
             nf = open(f"{fileName}.txt", 'a')
             nf.write(new_addr_num + '\n')
             nf.close()
-        return new_addr_num
+        return str(new_addr_num)
 
     def getStreet(self, log='', mode=False):
         get = (self.addr).upper(); new_street = ''; saintFlag = False #Uppercase and create new address to return
         get = (re.sub(r"[\t!#$@%^*+=`~/]| +", ' ', get)).strip(' ') #Strip any anomalies
         get = re.sub(r"(?<=\d)(ND|RD|TH|RTH)", '', get) #Strip any char of ordinal numbers
-        if re.search(r"(\W|^)(ST|SNT)\W", get):
+        if re.search(r"(\W|^)(ST|SNT)\W", get): #Check for 'Saint'
             get1 = re.sub(r"(\W|^)(ST|SNT)\W", ' ', get)
             saintFlag = True
             new_street = self.searchCycle(get1, saintFlag)
-        if new_street == "OTHER":
-            saintFlag = False
-        new_street = self.searchCycle(get, saintFlag)
+            if new_street == "OTHER":
+                saintFlag = False
+                new_street = self.searchCycle(get, saintFlag)
+        else:
+            new_street = self.searchCycle(get, saintFlag)
         new_street = re.sub(r"^FT\W| FT\W", "FORT ", new_street) #Replace 'FT' with 'FORT'
         new_street = re.sub(r"(?<=1)ST", '', new_street) #Strip 1st ordinal number
 
