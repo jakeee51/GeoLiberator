@@ -11,7 +11,7 @@ import re
 import time
 t0 = time.process_time_ns()
 
-#Account for '&' and 'STS'
+#Account for '&' and 'STS' and post cardinal direction
 #Option to append borough, state, zip, based on argument
 
 class AddressError(BaseException):
@@ -74,16 +74,16 @@ class GeoLiberator:
                             'NORTH RIVER PIERS', 'NORTHERN BL SR', 'OCEAN DRIVEWAY', 'OLIVE', 'PELHAM',
                             'PINEAPPLE', 'PLOUGHMANS BUSH', 'POMANDER', 'QUEENS MIDTOWN EP SR',
                             'QUEENS MIDTOWN EP SR', 'REGAL', 'ROOSEVELT', 'SEA BREEZE', 'STAGG', 'SUFFOLK',
-                            'TEN EYCK', 'UTICA', 'WASHINGTON', 'WASHINGTON MEWS', {'BROADWAY': ['BRDWY', 'BDWY', 'BWAY', 'BWY']}]
+                            'TEN EYCK', 'UTICA', 'WASHINGTON', 'WASHINGTON MEWS', {'BROADWAY': ['BROADWAY','BRDWY','BDWY','BWAY','BWY']}]
         hold = ''
         for typ in self.streetTypes:
             hold += re.sub(r"[\[\]' ]", '', str(self.streetTypes[typ])) + ','
         self.streetTypesAll = list(hold.strip(',').split(','))
 
     def getCompass(self, direc):
-        if 'N' == direc:
+        if 'N' == direc or "NO" == direc:
             return "NORTH"
-        elif 'S' == direc:
+        elif 'S' == direc or "SO" == direc:
             return "SOUTH"
         elif 'E' == direc:
             return "EAST"
@@ -103,13 +103,13 @@ class GeoLiberator:
                         new_find = "BROADWAY"
                         break
                 if getStreet:
-                    new_find = getStreet.group(1)
+                    new_find = getStreet.group(2)
                     break
         for key, val in self.streetTypes.items():
             if new_find != '':
                 break
             sType = '|'.join(val)
-            getStreetPattern1 = re.search(fr"(?!\d)?(\W|^)([NSEW])(\.? ?\d+(ST)? ?| ([A-Z]+ )+)({sType})\.?(?=\W|$)", g)
+            getStreetPattern1 = re.search(fr"(?!\d)?(\W|^)([NSEW]|NO|SO)\.?( ?\d+(ST)? ?| ([A-Z]+ )+)({sType})\.?(?=\W|$)", g)
             getStreetPattern2 = re.search(fr"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?[^\W]?\d+(ST)? ?|([A-Z]+ )+)({sType})\.?((?=\W)|$)", g)
             getStreetPattern3 = re.search(fr"(?!\d)?(AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF ([A-Z]+ )?[A-Z]+)(?=\W|$)", g)
             if getStreetPattern1:
@@ -204,6 +204,29 @@ class GeoLiberator:
             nf.write(new_addr + '\n')
             nf.close()
         return new_addr
+
+#Takes text file as input and switch argument to determine which address property to be standardized
+def autoGeoLiberate(file_path, switch=2, mode=True):
+    with open(file_path) as f:
+        lines = f.readlines()
+        for line in lines:
+            adr = GeoLiberator(str(line))
+            if switch == 2:
+                adr.getAddress(mode=mode)
+            elif switch == 1:
+                adr.getAddressNum(mode=mode)
+            elif switch == 0:
+                adr.getStreet(mode=mode)
+
+#Takes address as input and switch argument to determine which address property to be standardized
+def geoLiberate(addr, switch=2):
+    adr = GeoLiberator(str(addr))
+    if switch == 2:
+        adr.getAddress(mode=True)
+    elif switch == 1:
+        adr.getAddressNum(mode=True)
+    elif switch == 0:
+        adr.getStreet(mode=True)
 
 t1 = time.process_time_ns()
 total = t1 - t0
