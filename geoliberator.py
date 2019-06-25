@@ -3,9 +3,9 @@
 Author: David J. Morfe
 Module Name: GeoLiberator
 Functionality Purpose: Intake address data and apply data quality uniformity(intantiate data governance)
-6/24/19
+6/25/19
 '''
-#Alpha 1.4
+#Alpha 1.5
 
 import re
 import time
@@ -135,7 +135,7 @@ class GeoLiberator:
         get = re.sub(r"(?<=\d)(ND|RD|TH|RTH)", '', get) #Strip any char of ordinal numbers
         for key, val in self.streetTypes.items():
             sType = '|'.join(val)
-            gANpat1 = re.search(fr"(^\d+([- ]\d+)?)(?= (\d+ ?|[A-Z]+ )({sType})\.?(\W|$))", get)
+            gANpat1 = re.search(fr"(^\d+([- ]\d+)?)(?= ((\w+ ?)+)({sType})\.?(\W|$))", get)
             if gANpat1:
                 new_addr_num = gANpat1.group().replace(' ', '-')
         if new_addr_num == '':
