@@ -109,7 +109,7 @@ class GeoLiberator:
             if new_find != '':
                 break
             sType = '|'.join(val)
-            getStreetPattern1 = re.search(fr"(?!\d)?(\W|^)([NSEW]|NO|SO)\.?( ?\d+(ST)? ?| ([A-Z]+ )+)({sType})\.?(?=\W|$)", g)
+            getStreetPattern1 = re.search(fr"(?!\d)?(\W|^|\d)([NSEW]|NO|SO)\.?( ?\d+({sType})? ?| ([A-Z]+ )+)({sType})\.?(?=\W|$)", g)
             getStreetPattern2 = re.search(fr"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?[^\W]?\d+(ST)? ?|([A-Z]+ )+)({sType})\.?((?=\W)|$)", g)
             getStreetPattern3 = re.search(fr"(?!\d)?(AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF ([A-Z]+ )?[A-Z]+)(?=\W|$)", g)
             if getStreetPattern1:
