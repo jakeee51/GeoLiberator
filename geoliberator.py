@@ -3,7 +3,7 @@
 Author: David J. Morfe
 Module Name: GeoLiberator
 Functionality Purpose: Intake address data and apply data quality uniformity(intantiate data governance)
-6/25/19
+6/27/19
 '''
 #Alpha 1.5
 
@@ -45,6 +45,7 @@ class GeoLiberator:
                             "HIGHWAY": ["HIGHWAY","HWAY","HWY"],
                             "EXPRESSWAY": ["EXPRESSWAY","EXPRESWY","EXPRESWAY","EXPREWAY","EXPWA","EXPWY","EXPY","EXWY","EWY","EXP"],
                             "PLAZA": ["PLAZA","PLAZ","PLZA","PLZ"],
+                            "BRIDGE": ["BRIDGE","BRDG","BRG","BR"],
                             "CONCOURSE": ["CONCOURSE","CONC","CNCRS","CON","CO"],
                             "TERRACE": ["TERRACE","TERR","TER","TE"],
                             "CRESCENT": ["CRESCENT","CRESCNT","CRES"],
@@ -58,7 +59,6 @@ class GeoLiberator:
                             "RIDGE": ["RIDGE","RDG"], "COVE": ["COVE","CV"],
                             "TRAIL": ["TRAIL","TRL"], "GREEN": ["GREEN","GRN"],
                             "CAMP": ["CAMP","CP"], "PUBLIC SCHOOL": ["PS","P.S"],
-                            "STATION": ["STAT","STA"],
                             "STREET": ["STREET","STRE","STR","ST"],
                             "SLIP": ["SLIP"],"LOOP": ["LOOP"], "WAY": ["WAY"],"EST": ["EST"],"ROW": ["ROW"],"OVAL": ["OVAL"],"PATH": ["PATH"]}
         self.wordTypes = ['ARCADIA', 'ATLANTIC', 'ATLANTIC COMMONS', 'BATH', 'BAYSIDE',
@@ -135,7 +135,7 @@ class GeoLiberator:
         get = re.sub(r"(?<=\d)(ND|RD|TH|RTH)", '', get) #Strip any char of ordinal numbers
         for key, val in self.streetTypes.items():
             sType = '|'.join(val)
-            gANpat1 = re.search(fr"(^\d+([- ]\d+)?)(?= ((\w+ ?)+)({sType})\.?(\W|$))", get)
+            gANpat1 = re.search(fr"(^\d+([- ]\d+)?)(?= ((\w+\.? ?)+)({sType})\.?(\W|$))", get)
             if gANpat1:
                 new_addr_num = gANpat1.group().replace(' ', '-')
         if new_addr_num == '':

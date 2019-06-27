@@ -1,4 +1,4 @@
 from geoliberator import *
 
-geoLiberate("22E100ST", 0)
-geoLiberate("123 N. 52 ST", 1)
+address = "123 Main Street"
+geoLiberate(address,0)
