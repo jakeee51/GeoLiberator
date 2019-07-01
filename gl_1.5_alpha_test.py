@@ -2,7 +2,7 @@ from geoliberator import *
 import pandas as pd
 import time
 t0 = time.process_time()
-mSet = True
+mSet = False
 
 anon_street_trials = ['22E100ST', '123 N. 52 ST.', '123 N.52 STR', '123 N 52STRE',
                '123 N52ST.', '123 N 52 STREET', '123 N MAIN STREET', '123 52ST.',
@@ -152,7 +152,7 @@ def basicTest():
 
 ##mergeMatch()
 ##autoGeoLiberate("hold.txt", 2)
-##basicTest()
+basicTest()
 
 t1 = time.process_time()
 total = t1 - t0
