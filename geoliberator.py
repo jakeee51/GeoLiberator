@@ -3,7 +3,7 @@
 Author: David J. Morfe
 Module Name: GeoLiberator
 Functionality Purpose: Intake address data and apply data quality uniformity(intantiate data governance)
-7/1/19
+7/2/19
 '''
 #Alpha 1.5
 
@@ -37,7 +37,7 @@ class GeoLiberator:
         self.streetTypes = {"ROAD": ["ROAD","RD","RO"],
                             "AVENUE": ["AVENUE","AVEN","AVE","AV","AE"],
                             "DRIVE": ["DRIVE","DRIV","DR"],
-                            "PLACE": ["PLACE","PLAC","PLCE","PL","PLC"],
+                            "PLACE": ["PLACE","PLAC","PLCE","PLC","PL"],
                             "BOULEVARD": ["BOULEVARD","BLVD","BOUL","BLV","BO"],
                             "COURT": ["COURT","CRT","CT"],
                             "HEIGHTS": ["HEIGHTS","HTS"],
@@ -62,7 +62,7 @@ class GeoLiberator:
                             "STREET": ["STREET","STRE","STR","ST"],
                             "SLIP": ["SLIP"],"LOOP": ["LOOP"], "WAY": ["WAY"],"EST": ["EST"],"ROW": ["ROW"],"OVAL": ["OVAL"],"PATH": ["PATH"]}
         self.wordTypes = ['ARCADIA', 'ATLANTIC', 'ATLANTIC COMMONS', 'BATH', 'BAYSIDE',
-                            'BAYVIEW', 'BAYWAY', 'BCH RESERVATION', 'BOARDWALK', 'BOARDWALK', 'BOARDWALK',
+                            'BAYVIEW', 'BAYWAY', 'BCH RESERVATION', 'BOARDWALK',
                             'BOULEVARD', 'BOWERY', 'BRANT', 'BRIGHTON 1', 'BRIGHTON 2', 'BRIGHTON 3',
                             'BRIGHTON 4', 'BRIGHTON 7', 'BROADWAY ATRIUM', 'CENTRE MALL', 'CHESTER',
                             'CLINTON', 'CROSS BRONX EP SR', 'CROSS BRONX EP SR', 'CUMBERLAND', 'DEAUVILLE',
@@ -92,6 +92,18 @@ class GeoLiberator:
         else:
             return False
 
+    def ordinalAdd(self, num):
+        nn = ''
+        if re.search(r"(?<!1)1$", num):
+            nn = num + 'st'
+        elif num[-1] == '2':
+            nn = num + 'nd'
+        elif num[-1] == '3':
+            nn = num + 'rd'
+        else:
+            nn = num + 'th'
+        return nn
+
     def searchCycle(self, g, sF):
         new_find = ''
         if sF == False:
@@ -110,14 +122,14 @@ class GeoLiberator:
                 break
             sType = '|'.join(val)
             getStreetPattern1 = re.search(fr"(?!\d)?(\W|^|\d)([NSEW]|NO|SO)\.?( ?\d+({sType})? ?| ([A-Z]+ )+)({sType})\.?(?=\W|$)", g)
-            getStreetPattern2 = re.search(fr"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?[^\W]?\d+(ST)? ?|([A-Z]+ )+)({sType})\.?((?=\W)|$)", g)
+            getStreetPattern2 = re.search(fr"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?[^\W]?\d+({sType})? ?|([A-Z]+ )+)({sType})\.?((?=\W)|$)", g)
             getStreetPattern3 = re.search(fr"(?!\d)?(AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF ([A-Z]+ )?[A-Z]+)(?=\W|$)", g)
             if getStreetPattern1:
-                if getStreetPattern1.group(6) in self.streetTypes[key]:
+                if getStreetPattern1.group(4) in self.streetTypes[key] or getStreetPattern1.group(6) in self.streetTypes[key]:
                     new_find = self.getCompass(getStreetPattern1.group(2)) + ' ' + getStreetPattern1.group(3).strip(' ') + f" {key}"
                     break
             elif getStreetPattern2:
-                if getStreetPattern2.group(5) in self.streetTypes[key]:
+                if getStreetPattern2.group(3) in self.streetTypes[key] or getStreetPattern2.group(5) in self.streetTypes[key]:
                     new_find = getStreetPattern2.group(1).strip(' ') + f" {key}"
                     break
             elif getStreetPattern3:
@@ -168,6 +180,9 @@ class GeoLiberator:
             new_street = self.searchCycle(get, saintFlag)
         new_street = re.sub(r"^FT\W| FT\W", "FORT ", new_street) #Replace 'FT' with 'FORT'
         new_street = re.sub(r"(?<=1)ST", '', new_street) #Strip 1st ordinal number
+        if re.search(r"\d+", new_street):
+            ordNum = self.ordinalAdd(str(re.search(r"\d+", new_street).group()))
+            new_street = re.sub(r"\d+", ordNum, new_street)
 
         if log == '' and mode == True: #Print to standard output and return value
             print(new_street)

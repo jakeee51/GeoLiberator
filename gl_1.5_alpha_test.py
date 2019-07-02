@@ -2,7 +2,7 @@ from geoliberator import *
 import pandas as pd
 import time
 t0 = time.process_time()
-mSet = False
+mSet = True
 
 anon_street_trials = ['22E100ST', '123 N. 52 ST.', '123 N.52 STR', '123 N 52STRE',
                '123 N52ST.', '123 N 52 STREET', '123 N MAIN STREET', '123 52ST.',
@@ -11,34 +11,34 @@ anon_street_trials = ['22E100ST', '123 N. 52 ST.', '123 N.52 STR', '123 N 52STRE
                '100ST', '100 AV', 'EAST 100 ST', 'CHARLES ST',
                'EAST CHARLES ST', 'E 100 ST', 'E100ST', 'E 100ST',
                'E100 ST', 'E. 100ST']
-checker_anon = ['EAST 100 STREET', 'NORTH 52 STREET', 'NORTH 52 STREET', 'NORTH 52 STREET',
-                'NORTH 52 STREET', 'NORTH 52 STREET', 'NORTH MAIN STREET', '52 STREET',
-                '52 STREET', 'STANLEY STREET', 'NORTH MAIN STREET', '52 STREET',
-                'NORTH MAIN STREET', 'MARTIN LUTHER KING JR STREET', '100 STREET', '100 STREET',
-                '100 STREET', '100 AVENUE', 'EAST 100 STREET', 'CHARLES STREET',
-                'EAST CHARLES STREET', 'EAST 100 STREET', 'EAST 100 STREET', 'EAST 100 STREET',
-                'EAST 100 STREET', 'EAST 100 STREET']
-cardinal_trials = ['123 N. 52 ST', '123 N52 STR', '123 N 52STRE',
+checker_anon = ['EAST 100th STREET', 'NORTH 52nd STREET', 'NORTH 52nd STREET', 'NORTH 52nd STREET',
+                'NORTH 52nd STREET', 'NORTH 52nd STREET', 'NORTH MAIN STREET', '52nd STREET',
+                '52nd STREET', 'STANLEY STREET', 'NORTH MAIN STREET', '52nd STREET',
+                'NORTH MAIN STREET', 'MARTIN LUTHER KING JR STREET', '100th STREET', '100th STREET',
+                '100th STREET', '100th AVENUE', 'EAST 100th STREET', 'CHARLES STREET',
+                'EAST CHARLES STREET', 'EAST 100th STREET', 'EAST 100th STREET', 'EAST 100th STREET',
+                'EAST 100th STREET', 'EAST 100th STREET']
+cardinal_trials = ['123 N. 52nd ST', '123 N52 STR', '123 N 52STRE',
                   '123 N52ST', '123 N 52 STREET', '123 N MAIN STREET']
 nc_trials = ['123 52ST', '123 52 STR', '123 MAIN STRE',
              '123 NORTH 52 STREET', '123 NORTH MAIN STREET', '123 MARTIN LUTHER KING JR ST']
 ordinal_trials = ['6-6 6TH AVE PREK, MANHATTAN 11220', '122-52 MULBERRY STRE COMF, NEW YORK 10013',
                   '1 MURRAY HULBERT AVE, STATEN ISLAND 10305', '13 NELSON ST ITS-NMANH DOT, BROOKLYN 11231',
-                  '1234 4th AVE', '1234-02 NORTH 3rd ST']
-checker_street = ['NORTH 52 STREET', 'NORTH 52 STREET', 'NORTH 52 STREET',
-           'NORTH 52 STREET', 'NORTH 52 STREET', 'NORTH MAIN STREET',
-           '52 STREET', '52 STREET', 'MAIN STREET',
-           'NORTH 52 STREET', 'NORTH MAIN STREET', 'MARTIN LUTHER KING JR STREET',
-           '6 AVENUE', 'MULBERRY STREET', 'MURRAY HULBERT AVENUE',
-           'NELSON STREET', '4 AVENUE', 'NORTH 3 STREET']
+                  '1234 11th AVE', '1234-02 NORTH 3rd ST']
+checker_street = ['NORTH 52nd STREET', 'NORTH 52nd STREET', 'NORTH 52nd STREET',
+                  'NORTH 52nd STREET', 'NORTH 52nd STREET', 'NORTH MAIN STREET',
+                  '52nd STREET', '52nd STREET', 'MAIN STREET',
+                  'NORTH 52nd STREET', 'NORTH MAIN STREET', 'MARTIN LUTHER KING JR STREET',
+                  '6th AVENUE', 'MULBERRY STREET', 'MURRAY HULBERT AVENUE',
+                  'NELSON STREET', '11th AVENUE', 'NORTH 3rd STREET']
 checker_num = ['123', '123', '123', '123', '123', '123',
                '123', '123', '123', '123', '123', '123',
                '6-6', '122-52', '1', '13', '1234', '1234-02']
-checker_address = ['123 NORTH 52 STREET', '123 NORTH 52 STREET', '123 NORTH 52 STREET', '123 NORTH 52 STREET',
-                   '123 NORTH 52 STREET', '123 NORTH MAIN STREET', '123 52 STREET', '123 52 STREET',
-                   '123 MAIN STREET', '123 NORTH 52 STREET', '123 NORTH MAIN STREET',
-                   '123 MARTIN LUTHER KING JR STREET', '6-6 6 AVENUE', '122-52 MULBERRY STREET',
-                   '1 MURRAY HULBERT AVENUE', '13 NELSON STREET', '1234 4 AVENUE', '1234-02 NORTH 3 STREET']
+checker_address = ['123 NORTH 52nd STREET', '123 NORTH 52nd STREET', '123 NORTH 52nd STREET', '123 NORTH 52nd STREET',
+                   '123 NORTH 52nd STREET', '123 NORTH MAIN STREET', '123 52nd STREET', '123 52nd STREET',
+                   '123 MAIN STREET', '123 NORTH 52nd STREET', '123 NORTH MAIN STREET',
+                   '123 MARTIN LUTHER KING JR STREET', '6-6 6th AVENUE', '122-52 MULBERRY STREET',
+                   '1 MURRAY HULBERT AVENUE', '13 NELSON STREET', '1234 11th AVENUE', '1234-02 NORTH 3rd STREET']
 
 def mergeMatch():
     n1 = open("merged_addresses.txt", 'w')
