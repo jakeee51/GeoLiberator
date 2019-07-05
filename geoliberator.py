@@ -126,7 +126,6 @@ class GeoLiberator:
             getStreetPattern2 = re.search(fr"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?[^\W]?\d+({sType})? ?|([A-Z]+ )+)({sType})\.?((?=\W)|$)", g)
             getStreetPattern3 = re.search(r"(?!\d)?(AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF ([A-Z]+ )?[A-Z]+)(?=\W|$)", g)
             if getStreetPattern1:
-                print(key)
                 if getStreetPattern1.group(4) in self.streetTypes[key] or getStreetPattern1.group(6) in self.streetTypes[key]:
                     new_find = self.getCompass(getStreetPattern1.group(2)) + ' ' + getStreetPattern1.group(3).strip(' ') + f" {key}"
                     break
