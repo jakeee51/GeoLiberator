@@ -5,7 +5,7 @@ with open("README.md", 'r') as fh:
 
 setuptools.setup(
     name = "GeoLiberator",
-    version = "0.1.5",
+    version = "0.1.6",
     author = "David J. Morfe",
     author_email = "jakemorfe@gmail.com",
     description = "A small module that cleans, parses and standardizes addresses",
