@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 '''
 Author: David J. Morfe
-Module Name: GeoLiberator
-Functionality Purpose: Intake address data and apply data quality uniformity(intantiate data governance)
-7/2/19
+Application Name: GeoLiberator
+Functionality Purpose: Instill data quality upon address data
+Version: Alpha 0.1.6
 '''
-#Alpha 1.5
+#7/5/19
 
 import re
-import time
-t0 = time.process_time_ns()
+##import time
+##t0 = time.process_time_ns()
 
+#Account for '331/River/NJ/Rd'
 #Account for '&' and 'STS' and post cardinal direction
 #Option to append borough, state, zip, based on argument
 
@@ -123,8 +124,9 @@ class GeoLiberator:
             sType = '|'.join(val)
             getStreetPattern1 = re.search(fr"(?!\d)?(\W|^|\d)([NSEW]|NO|SO)\.?( ?\d+({sType})? ?| ([A-Z]+ )+)({sType})\.?(?=\W|$)", g)
             getStreetPattern2 = re.search(fr"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?[^\W]?\d+({sType})? ?|([A-Z]+ )+)({sType})\.?((?=\W)|$)", g)
-            getStreetPattern3 = re.search(fr"(?!\d)?(AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF ([A-Z]+ )?[A-Z]+)(?=\W|$)", g)
+            getStreetPattern3 = re.search(r"(?!\d)?(AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF ([A-Z]+ )?[A-Z]+)(?=\W|$)", g)
             if getStreetPattern1:
+                print(key)
                 if getStreetPattern1.group(4) in self.streetTypes[key] or getStreetPattern1.group(6) in self.streetTypes[key]:
                     new_find = self.getCompass(getStreetPattern1.group(2)) + ' ' + getStreetPattern1.group(3).strip(' ') + f" {key}"
                     break
@@ -132,7 +134,7 @@ class GeoLiberator:
                 if getStreetPattern2.group(3) in self.streetTypes[key] or getStreetPattern2.group(5) in self.streetTypes[key]:
                     new_find = getStreetPattern2.group(1).strip(' ') + f" {key}"
                     break
-            elif getStreetPattern3:
+            elif getStreetPattern3: #IMPLEMENT CARDINAL DIRECTIONS
                 new_find = "AVENUE " + getStreetPattern3.group(2)
                 break
         if sF == True and new_find != '':
@@ -147,11 +149,18 @@ class GeoLiberator:
         get = re.sub(r"(?<=\d)(ND|RD|TH|RTH)", '', get) #Strip any char of ordinal numbers
         for key, val in self.streetTypes.items():
             sType = '|'.join(val)
-            gANpat1 = re.search(fr"(^\d+([- ]\d+)?)(?=[NSEW]\d+({sType})\.?(\W|$))|(^\d+([- ]\d+)?)(?= ((\w+\.? ?)+)({sType})\.?(\W|$))", get)
+            group1 = fr"(^\d+([- ]\d+)?)(?=[NSEW]\.? ?\d+ ?(ST)\.?(\W|$))"
+            group2 = fr"(^\d+([- ]\d+)?)(?= ((\w+\.? ?)+)({sType})\.?(\W|$))"
+            group3 = r"(?=\d+([ -]\d+)? (AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF ([A-Z]+ )?[A-Z]+)(?=\W|$))^\d+([- ]\d+)?"
+            gANpat1 = re.search(fr"{group1}|{group2}", get)
+            gANpat2 = re.search(fr"{group3}", get)
             if gANpat1:
                 new_addr_num = gANpat1.group().replace(' ', '-')
+            elif gANpat2:
+                new_addr_num = gANpat2.group().replace(' ', '-')
         if new_addr_num == '':
             new_addr_num = "OTHER"
+
         if log == '' and mode == True: #Print to standard output and return value
             print(new_addr_num)
         elif log != '': #Write to new or specfied file
@@ -180,7 +189,7 @@ class GeoLiberator:
             new_street = self.searchCycle(get, saintFlag)
         new_street = re.sub(r"^FT\W| FT\W", "FORT ", new_street) #Replace 'FT' with 'FORT'
         new_street = re.sub(r"(?<=1)ST", '', new_street) #Strip 1st ordinal number
-        if re.search(r"\d+", new_street):
+        if re.search(r"\d+", new_street): #Apply ordinal numbers
             ordNum = self.ordinalAdd(str(re.search(r"\d+", new_street).group()))
             new_street = re.sub(r"\d+", ordNum, new_street)
 
@@ -207,6 +216,7 @@ class GeoLiberator:
             new_addr = gAN + ' ' + gS
         else:
             new_addr = "OTHER"
+
         if log == '' and mode == True: #Print to standard output and return value
             print(new_addr)
         elif log != '': #Write to new or specfied file
@@ -221,17 +231,20 @@ class GeoLiberator:
         return new_addr
 
 #Takes text file as input and switch argument to determine which address property to be standardized
-def autoGeoLiberate(file_path, switch=2, mode=True):
+def autoGeoLiberate(file_path, switch=2, write=''):
+    mode = True
+    if write != '':
+        mode = False
     with open(file_path) as f:
         lines = f.readlines()
         for line in lines:
             adr = GeoLiberator(str(line))
             if switch == 2:
-                adr.getAddress(mode=mode)
+                adr.getAddress(log=write, mode=mode)
             elif switch == 1:
-                adr.getAddressNum(mode=mode)
+                adr.getAddressNum(log=write, mode=mode)
             elif switch == 0:
-                adr.getStreet(mode=mode)
+                adr.getStreet(log=write, mode=mode)
 
 #Takes address as input and switch argument to determine which address property to be standardized
 def geoLiberate(addr, switch=2):
@@ -243,8 +256,8 @@ def geoLiberate(addr, switch=2):
     elif switch == 0:
         adr.getStreet(mode=True)
 
-t1 = time.process_time_ns()
-total = t1 - t0
-if __name__ == "__main__":
-    print(f"Timestamp 1: {t0} n/s\nTimestamp 2: {t1} n/s")
-    print("Module Time Elapsed:", total, "nanoseconds")
+##t1 = time.process_time_ns()
+##total = t1 - t0
+##if __name__ == "__main__":
+##    print(f"Timestamp 1: {t0} n/s\nTimestamp 2: {t1} n/s")
+##    print("Module Time Elapsed:", total, "nanoseconds")
