@@ -5,14 +5,17 @@ Application Name: GeoLiberator
 Functionality Purpose: Instill data quality upon address data
 Version: Alpha 0.1.6
 '''
-#7/5/19
+#7/10/19
 
 import re
-##import time
+import sys
+import time
+
 ##t0 = time.process_time_ns()
 
-#Account for '331/River/NJ/Rd'
-#Account for '&' and 'STS' and post cardinal direction
+#Create load bar for autoGeoLiberate()
+#Account for '331/River/NJ/Rd' and post cardinal direction
+#Account for '&' and 'STS' and multiple street types
 #Option to append borough, state, zip, based on argument
 
 class AddressError(BaseException):
@@ -58,8 +61,7 @@ class GeoLiberator:
                             "SQUARE": ["SQUARE","SQ"], "CIRCLE": ["CIRCLE","CIR"],
                             "CLOSE": ["CLOSE","CLOS"], "VILLAGE": ["VILLAGE","VLG"],
                             "RIDGE": ["RIDGE","RDG"], "COVE": ["COVE","CV"],
-                            "TRAIL": ["TRAIL","TRL"], "GREEN": ["GREEN","GRN"],
-                            "CAMP": ["CAMP","CP"], "PUBLIC SCHOOL": ["PS","P.S"],
+                            "TRAIL": ["TRAIL","TRL"], "GREEN": ["GREEN","GRN"], "CAMP": ["CAMP","CP"],
                             "STREET": ["STREET","STRE","STR","ST"],
                             "SLIP": ["SLIP"],"LOOP": ["LOOP"], "WAY": ["WAY"],"EST": ["EST"],"ROW": ["ROW"],"OVAL": ["OVAL"],"PATH": ["PATH"]}
         self.wordTypes = ['ARCADIA', 'ATLANTIC', 'ATLANTIC COMMONS', 'BATH', 'BAYSIDE',
@@ -122,12 +124,12 @@ class GeoLiberator:
             if new_find != '':
                 break
             sType = '|'.join(val)
-            getStreetPattern1 = re.search(fr"(?!\d)?(\W|^|\d)([NSEW]|NO|SO)\.?( ?\d+({sType})? ?| ([A-Z]+ )+)({sType})\.?(?=\W|$)", g)
-            getStreetPattern2 = re.search(fr"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?[^\W]?\d+({sType})? ?|([A-Z]+ )+)({sType})\.?((?=\W)|$)", g)
+            getStreetPattern1 = re.search(fr"(?!\d)?(\W|^|\d)([NSEW]|NO|SO)(\.? ?\d+(ST)? ?|(\. ?| )([A-Z]+ )+)({sType})\.?(?=\W|$)", g)
+            getStreetPattern2 = re.search(fr"(?!\d)?( ?(NORTH |SOUTH |EAST |WEST )?[^\W]?\d+(ST)? ?|([A-Z]+ )+)({sType})\.?((?=\W)|$)", g)
             getStreetPattern3 = re.search(r"(?!\d)?(AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF ([A-Z]+ )?[A-Z]+)(?=\W|$)", g)
             if getStreetPattern1:
-                if getStreetPattern1.group(4) in self.streetTypes[key] or getStreetPattern1.group(6) in self.streetTypes[key]:
-                    new_find = self.getCompass(getStreetPattern1.group(2)) + ' ' + getStreetPattern1.group(3).strip(' ') + f" {key}"
+                if getStreetPattern1.group(4) in self.streetTypes[key] or getStreetPattern1.group(7) in self.streetTypes[key]:
+                    new_find = self.getCompass(getStreetPattern1.group(2)) + ' ' + getStreetPattern1.group(3).strip('. ') + f" {key}"
                     break
             elif getStreetPattern2:
                 if getStreetPattern2.group(3) in self.streetTypes[key] or getStreetPattern2.group(5) in self.streetTypes[key]:
@@ -228,6 +230,13 @@ class GeoLiberator:
             nf.write(new_addr + '\n')
             nf.close()
         return new_addr
+
+#Acount the lines in a file
+def file_len(file_name):
+    with open(file_name) as f:
+        for i, L in enumerate(f):
+            pass
+    return i + 1
 
 #Takes text file as input and switch argument to determine which address property to be standardized
 def autoGeoLiberate(file_path, switch=2, write=''):
