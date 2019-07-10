@@ -3,7 +3,7 @@
 Author: David J. Morfe
 Application Name: GeoLiberator
 Functionality Purpose: Instill data quality upon address data
-Version: Alpha 0.1.6
+Version: Alpha 0.1.7
 '''
 #7/10/19
 
@@ -240,12 +240,18 @@ def file_len(file_name):
 
 #Takes text file as input and switch argument to determine which address property to be standardized
 def autoGeoLiberate(file_path, switch=2, write=''):
+    spin = "/-\|"; c = 0
     mode = True
     if write != '':
         mode = False
     with open(file_path) as f:
         lines = f.readlines()
         for line in lines:
+            print(spin[c], end=''); sys.stdout.flush()
+            c += 1
+            print('\b', end=''); sys.stdout.flush()
+            if c == 4:
+                c = 0
             adr = GeoLiberator(str(line))
             if switch == 2:
                 adr.getAddress(log=write, mode=mode)
