@@ -33,7 +33,7 @@ if sys.argv[1] == '--status' or sys.argv[1] == "-S":
     barIncr = int(FL * .025); barNum = 0; dashNum = 40; c = 0; lc = 0
     for line in lines:
         perc = (lc/FL) * 100
-        bar = '|' + ('█' * barNum) + ('-' * dashNum) + '|' + " [" + padNum(perc) + "%]"
+        bar = '|' + ('█' * barNum) + ('-' * dashNum) + '|' + " [{:>}]".format(padNum(perc))
         c += 1; lc += 1
         if c == barIncr:
             if barNum < 39:
