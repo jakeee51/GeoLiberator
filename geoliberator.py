@@ -13,8 +13,7 @@ import time
 
 ##t0 = time.process_time_ns()
 
-#Create load bar for autoGeoLiberate()
-#Account for word house numbers
+#Account for spelled house numbers
 #Account for '331/River/NJ/Rd' and post cardinal direction
 #Account for '&' and 'STS' and multiple street types
 #Option to append borough, state, zip, based on argument
@@ -24,16 +23,16 @@ class AddressError(BaseException):
     pass
 
 class Unbuffered(object):
-   def __init__(self, stream):
-       self.stream = stream
-   def write(self, data):
-       self.stream.write(data)
-       self.stream.flush()
-   def writelines(self, datas):
-       self.stream.writelines(datas)
-       self.stream.flush()
-   def __getattr__(self, attr):
-       return getattr(self.stream, attr)
+    def __init__(self, stream):
+        self.stream = stream
+    def write(self, data):
+        self.stream.write(data)
+        self.stream.flush()
+    def writelines(self, datas):
+        self.stream.writelines(datas)
+        self.stream.flush()
+    def __getattr__(self, attr):
+        return getattr(self.stream, attr)
 
 sys.stdout = Unbuffered(sys.stdout)
 
@@ -44,9 +43,7 @@ class GeoLiberator:
     One may manipulate object using member functions in order to parse certain properties of the address.
     Second 'log' argument set to return value by default or write to new specified file name.
     Third 'mode' argument set to False by default or True to print output results.
-
     Sample Code:
-
         from geoliberator import *
         GL_Object = GeoLiberator("123 Sample Street, New York 12345")
         GL_Object.getAddress(log="output_log.txt", mode=True) #This code should both print and create a log file
