@@ -81,7 +81,7 @@ class GeoLiberator:
                             "TERRACE": ["TERRACE","TERR","TER","TE"],
                             "CRESCENT": ["CRESCENT","CRESCNT","CRES"],
                             "ALLEY": ["ALLEY","ALY"], "GARDENS": ["GARDENS","GDNS"],
-                            "ESPLANADE": ["ESPLANADE","ESPL"], "PARK": ["PARK","PRK","PK"],
+                            "PARK": ["PARK","PRK","PK"],
                             "HILL": ["HILL","HL"], "LANE": ["LANE","LN"],
                             "PROMENADE": ["PROMENADE","PROM"], "COURSE": ["COURSE","CRSE"],
                             "FREEWAY": ["FREEWAY","FWY"], "TURNPIKE": ["TURNPIKE","TPKE"],
@@ -96,7 +96,7 @@ class GeoLiberator:
                           'BOULEVARD', 'BOWERY', 'BRANT', 'BRIGHTON 1', 'BRIGHTON 2', 'BRIGHTON 3',
                           'BRIGHTON 4', 'BRIGHTON 7', 'BROADWAY ATRIUM', 'CENTRE MALL', 'CHESTER',
                           'CLINTON', 'CROSS BRONX EP SR', 'CROSS BRONX EP SR', 'CUMBERLAND', 'DEAUVILLE',
-                          'DEVON', 'ESPLANADE', 'ESSEX', 'FLEET', 'FULTON', 'GOTHAM', 'GREENWAY', 'GREENWAY',
+                          'DEVON', 'ESSEX', 'FLEET', 'FULTON', 'GOTHAM', 'GREENWAY', 'GREENWAY',
                           'GREENWICH MEWS', 'HAMILTON', 'HILLCREST', 'HUDSON', 'IRVING', 'JAMAICA', 'JONES',
                           'KILDARE', 'KINGSBOROUGH 2', 'KINGSBOROUGH 3', 'KINGSBOROUGH 4', 'KINGSBOROUGH 5',
                           'KINGSBOROUGH 6', 'KINGSBOROUGH 7', 'LAFAYETTE', 'LINCOLN', 'MARION', 'MONUMENT',
@@ -104,7 +104,8 @@ class GeoLiberator:
                           'NORTH RIVER PIERS', 'NORTHERN BL SR', 'OCEAN DRIVEWAY', 'OLIVE', 'PELHAM',
                           'PINEAPPLE', 'PLOUGHMANS BUSH', 'POMANDER', 'QUEENS MIDTOWN EP SR',
                           'QUEENS MIDTOWN EP SR', 'REGAL', 'ROOSEVELT', 'SEA BREEZE', 'STAGG', 'SUFFOLK',
-                          'TEN EYCK', 'UTICA', 'WASHINGTON', 'WASHINGTON MEWS', {'BROADWAY': ['BROADWAY','BRDWY','BDWY','BWAY','BWY']}]
+                          'TEN EYCK', 'UTICA', 'WASHINGTON', 'WASHINGTON MEWS',
+                          {"ESPLANADE": ["ESPLANADE","ESPL"], 'BROADWAY': ['BROADWAY','BRDWY','BDWY','BWAY','BWY']}]
         hold = ''
         for typ in self.streetTypes:
             hold += re.sub(r"[\[\]' ]", '', str(self.streetTypes[typ])) + ','
@@ -140,7 +141,11 @@ class GeoLiberator:
             for stre in self.wordTypes: #Check for word/name street types
                 getStreet = re.search(fr"(?!\d)?(\W|^)({stre})(\W|$)", g)
                 if type(stre) == dict:
-                    streB = '|'.join(stre['BROADWAY'])
+                    streA = '|'.join(stre["ESPLANADE"])
+                    streB = '|'.join(stre["BROADWAY"])
+                    if re.search(fr"(?!\d)?\W?({streA})(\W|$)", g):
+                        new_find = "ESPLANADE"
+                        break
                     if re.search(fr"(?!\d)?\W?({streB})(\W|$)", g):
                         new_find = "BROADWAY"
                         break
@@ -175,9 +180,36 @@ class GeoLiberator:
         get = (self.addr).upper(); new_addr_num = '' #Uppercase and create new address to return
         get = (re.sub(r"[\t!#$@%^*+=`~/]| +", ' ', get)).strip(' ') #Strip any anomalies
         get = re.sub(r"(?<=\d)(ND|RD|TH|RTH)", '', get) #Strip any char of ordinal numbers
+        for val in self.wordTypes:
+            if type(val) == dict:
+                streA = '|'.join(val["ESPLANADE"])
+                streB = '|'.join(val["BROADWAY"])
+                grab = re.search(fr"(?!\d)?\W?({streA}|{streB})(\W|$)", get); wType = ''
+                if grab:
+                    wType = grab.group(1)
+                group1 = fr"(^\d+([- ]\d+)?)(?=[NSEW]\.? ?\d+ ?({wType})\.?(\W|$))"
+                group2 = fr"(^\d+([- ]\d+)?)(?= ((\w+\.? ?)+)({wType})\.?(\W|$))"
+                group3 = r"(?=\d+([ -]\d+)? (AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF ([A-Z]+ )?[A-Z]+)(?=\W|$))^\d+([- ]\d+)?"
+                gANpat1 = re.search(fr"{group1}|{group2}", get)
+                gANpat2 = re.search(fr"{group3}", get)
+                if gANpat1:
+                    new_addr_num = gANpat1.group().replace(' ', '-')
+                elif gANpat2:
+                    new_addr_num = gANpat2.group().replace(' ', '-')
+            else:
+                sType = '|'.join(val)
+                group1 = fr"(^\d+([- ]\d+)?)(?=[NSEW]\.? ?\d+ ?({sType})\.?(\W|$))"
+                group2 = fr"(^\d+([- ]\d+)?)(?= ((\w+\.? ?)+)({sType})\.?(\W|$))"
+                group3 = r"(?=\d+([ -]\d+)? (AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF ([A-Z]+ )?[A-Z]+)(?=\W|$))^\d+([- ]\d+)?"
+                gANpat1 = re.search(fr"{group1}|{group2}", get)
+                gANpat2 = re.search(fr"{group3}", get)
+                if gANpat1:
+                    new_addr_num = gANpat1.group().replace(' ', '-')
+                elif gANpat2:
+                    new_addr_num = gANpat2.group().replace(' ', '-')
         for key, val in self.streetTypes.items():
             sType = '|'.join(val)
-            group1 = fr"(^\d+([- ]\d+)?)(?=[NSEW]\.? ?\d+ ?(ST)\.?(\W|$))"
+            group1 = fr"(^\d+([- ]\d+)?)(?=[NSEW]\.? ?\d+ ?({sType})\.?(\W|$))"
             group2 = fr"(^\d+([- ]\d+)?)(?= ((\w+\.? ?)+)({sType})\.?(\W|$))"
             group3 = r"(?=\d+([ -]\d+)? (AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF ([A-Z]+ )?[A-Z]+)(?=\W|$))^\d+([- ]\d+)?"
             gANpat1 = re.search(fr"{group1}|{group2}", get)
