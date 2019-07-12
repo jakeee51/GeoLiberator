@@ -3,9 +3,9 @@
 Author: David J. Morfe
 Application Name: GeoLiberator
 Functionality Purpose: Instill data quality upon address data
-Version: Alpha 0.1.7
+Version: Alpha 0.2.0
 '''
-#7/10/19
+#7/12/19
 
 import re
 import sys
@@ -14,12 +14,28 @@ import time
 ##t0 = time.process_time_ns()
 
 #Create load bar for autoGeoLiberate()
+#Account for word house numbers
 #Account for '331/River/NJ/Rd' and post cardinal direction
 #Account for '&' and 'STS' and multiple street types
 #Option to append borough, state, zip, based on argument
+#Create custom address formatter
 
 class AddressError(BaseException):
     pass
+
+class Unbuffered(object):
+   def __init__(self, stream):
+       self.stream = stream
+   def write(self, data):
+       self.stream.write(data)
+       self.stream.flush()
+   def writelines(self, datas):
+       self.stream.writelines(datas)
+       self.stream.flush()
+   def __getattr__(self, attr):
+       return getattr(self.stream, attr)
+
+sys.stdout = Unbuffered(sys.stdout)
 
 class GeoLiberator:
     '''
@@ -38,6 +54,17 @@ class GeoLiberator:
     
     def __init__(self, addr):
         self.addr = str(addr)
+        self.states = {
+            'Mississippi': 'MS', 'Oklahoma': 'OK', 'Delaware': 'DE', 'Minnesota': 'MN', 'Illinois': 'IL', 'Arkansas': 'AR',
+            'New Mexico': 'NM', 'Indiana': 'IN', 'Maryland': 'MD', 'Louisiana': 'LA', 'Idaho': 'ID', 'Wyoming': 'WY',
+            'Tennessee': 'TN', 'Arizona': 'AZ', 'Iowa': 'IA', 'Michigan': 'MI', 'Kansas': 'KS', 'Utah': 'UT',
+            'Virginia': 'VA', 'Oregon': 'OR', 'Connecticut': 'CT', 'Montana': 'MT', 'California': 'CA',
+            'Massachusetts': 'MA', 'West Virginia': 'WV', 'South Carolina': 'SC', 'New Hampshire': 'NH',
+            'Wisconsin': 'WI', 'Vermont': 'VT', 'Georgia': 'GA', 'North Dakota': 'ND', 'Pennsylvania': 'PA',
+            'Florida': 'FL', 'Alaska': 'AK', 'Kentucky': 'KY', 'Hawaii': 'HI', 'Nebraska': 'NE', 'Missouri': 'MO',
+            'Ohio': 'OH', 'Alabama': 'AL', 'New York': 'NY', 'South Dakota': 'SD', 'Colorado': 'CO', 'New Jersey': 'NJ',
+            'Washington': 'WA', 'North Carolina': 'NC', 'District of Columbia': 'DC', 'Texas': 'TX', 'Nevada': 'NV',
+            'Maine': 'ME', 'Rhode Island': 'RI'}
         self.streetTypes = {"ROAD": ["ROAD","RD","RO"],
                             "AVENUE": ["AVENUE","AVEN","AVE","AV","AE"],
                             "DRIVE": ["DRIVE","DRIV","DR"],
@@ -65,19 +92,19 @@ class GeoLiberator:
                             "STREET": ["STREET","STRE","STR","ST"],
                             "SLIP": ["SLIP"],"LOOP": ["LOOP"], "WAY": ["WAY"],"EST": ["EST"],"ROW": ["ROW"],"OVAL": ["OVAL"],"PATH": ["PATH"]}
         self.wordTypes = ['ARCADIA', 'ATLANTIC', 'ATLANTIC COMMONS', 'BATH', 'BAYSIDE',
-                            'BAYVIEW', 'BAYWAY', 'BCH RESERVATION', 'BOARDWALK',
-                            'BOULEVARD', 'BOWERY', 'BRANT', 'BRIGHTON 1', 'BRIGHTON 2', 'BRIGHTON 3',
-                            'BRIGHTON 4', 'BRIGHTON 7', 'BROADWAY ATRIUM', 'CENTRE MALL', 'CHESTER',
-                            'CLINTON', 'CROSS BRONX EP SR', 'CROSS BRONX EP SR', 'CUMBERLAND', 'DEAUVILLE',
-                            'DEVON', 'ESPLANADE', 'ESSEX', 'FLEET', 'FULTON', 'GOTHAM', 'GREENWAY', 'GREENWAY',
-                            'GREENWICH MEWS', 'HAMILTON', 'HILLCREST', 'HUDSON', 'IRVING', 'JAMAICA', 'JONES',
-                            'KILDARE', 'KINGSBOROUGH 2', 'KINGSBOROUGH 3', 'KINGSBOROUGH 4', 'KINGSBOROUGH 5',
-                            'KINGSBOROUGH 6', 'KINGSBOROUGH 7', 'LAFAYETTE', 'LINCOLN', 'MARION', 'MONUMENT',
-                            'ELLIOTT', 'OXFORD', 'NAVY', 'NEPTUNE', 'NEW ENGLAND THRUWAY', 'NEWPORT',
-                            'NORTH RIVER PIERS', 'NORTHERN BL SR', 'OCEAN DRIVEWAY', 'OLIVE', 'PELHAM',
-                            'PINEAPPLE', 'PLOUGHMANS BUSH', 'POMANDER', 'QUEENS MIDTOWN EP SR',
-                            'QUEENS MIDTOWN EP SR', 'REGAL', 'ROOSEVELT', 'SEA BREEZE', 'STAGG', 'SUFFOLK',
-                            'TEN EYCK', 'UTICA', 'WASHINGTON', 'WASHINGTON MEWS', {'BROADWAY': ['BROADWAY','BRDWY','BDWY','BWAY','BWY']}]
+                          'BAYVIEW', 'BAYWAY', 'BCH RESERVATION', 'BOARDWALK',
+                          'BOULEVARD', 'BOWERY', 'BRANT', 'BRIGHTON 1', 'BRIGHTON 2', 'BRIGHTON 3',
+                          'BRIGHTON 4', 'BRIGHTON 7', 'BROADWAY ATRIUM', 'CENTRE MALL', 'CHESTER',
+                          'CLINTON', 'CROSS BRONX EP SR', 'CROSS BRONX EP SR', 'CUMBERLAND', 'DEAUVILLE',
+                          'DEVON', 'ESPLANADE', 'ESSEX', 'FLEET', 'FULTON', 'GOTHAM', 'GREENWAY', 'GREENWAY',
+                          'GREENWICH MEWS', 'HAMILTON', 'HILLCREST', 'HUDSON', 'IRVING', 'JAMAICA', 'JONES',
+                          'KILDARE', 'KINGSBOROUGH 2', 'KINGSBOROUGH 3', 'KINGSBOROUGH 4', 'KINGSBOROUGH 5',
+                          'KINGSBOROUGH 6', 'KINGSBOROUGH 7', 'LAFAYETTE', 'LINCOLN', 'MARION', 'MONUMENT',
+                          'ELLIOTT', 'OXFORD', 'NAVY', 'NEPTUNE', 'NEW ENGLAND THRUWAY', 'NEWPORT',
+                          'NORTH RIVER PIERS', 'NORTHERN BL SR', 'OCEAN DRIVEWAY', 'OLIVE', 'PELHAM',
+                          'PINEAPPLE', 'PLOUGHMANS BUSH', 'POMANDER', 'QUEENS MIDTOWN EP SR',
+                          'QUEENS MIDTOWN EP SR', 'REGAL', 'ROOSEVELT', 'SEA BREEZE', 'STAGG', 'SUFFOLK',
+                          'TEN EYCK', 'UTICA', 'WASHINGTON', 'WASHINGTON MEWS', {'BROADWAY': ['BROADWAY','BRDWY','BDWY','BWAY','BWY']}]
         hold = ''
         for typ in self.streetTypes:
             hold += re.sub(r"[\[\]' ]", '', str(self.streetTypes[typ])) + ','
@@ -245,14 +272,39 @@ def autoGeoLiberate(file_path, switch=2, write=''):
         mode = False
     with open(file_path) as f:
         lines = f.readlines()
-        for line in lines:
-            adr = GeoLiberator(str(line))
-            if switch == 2:
-                adr.getAddress(log=write, mode=mode)
-            elif switch == 1:
-                adr.getAddressNum(log=write, mode=mode)
-            elif switch == 0:
-                adr.getStreet(log=write, mode=mode)
+        if len(sys.argv) == 2:
+            if sys.argv[1] == '--status' or sys.argv[1] == "-S":
+                FL = file_len(file_path)
+                barIncr = int(FL * .025); barNum = 0; dashNum = 40; c = 0; lc = 0
+                for line in lines:
+                    perc = (lc/FL)
+                    bar = '|' + ('█' * barNum) + ('-' * dashNum) + '|' + " [{:>.2%}]".format(perc)
+                    c += 1; lc += 1
+                    if c == barIncr:
+                       if barNum < 39:
+                           c = 0; barNum += 1; dashNum -= 1
+                           print(f"\r{bar}", end=''); sys.stdout.flush()
+                    elif lc == FL:
+                       print('\r|' + ('█' * 40) + '|' + " [100%]  "); sys.stdout.flush()
+                    adr = GeoLiberator(str(line))
+                    if switch == 2:
+                        adr.getAddress(log=write, mode=mode)
+                    elif switch == 1:
+                        adr.getAddressNum(log=write, mode=mode)
+                    elif switch == 0:
+                        adr.getStreet(log=write, mode=mode)
+        else:
+            if mode == False:
+                print("Running...")
+            for line in lines:
+                adr = GeoLiberator(str(line))
+                if switch == 2:
+                    adr.getAddress(log=write, mode=mode)
+                elif switch == 1:
+                    adr.getAddressNum(log=write, mode=mode)
+                elif switch == 0:
+                    adr.getStreet(log=write, mode=mode)
+            print("Done!")
 
 #Takes address as input and switch argument to determine which address property to be standardized
 def geoLiberate(addr, switch=2):
