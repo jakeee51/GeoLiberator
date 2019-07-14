@@ -5,7 +5,7 @@ Application Name: GeoLiberator
 Functionality Purpose: Instill data quality upon address data
 Version: Alpha 0.2.0
 '''
-#7/12/19
+#7/13/19
 
 import re
 import sys
