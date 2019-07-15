@@ -10,25 +10,25 @@ To start, import with your desired handle to call upon the module with ease,
 ```python
 import GeoLiberator as GL
 
-GL.geoLiberate("123 Example St", 2) # '2' to parse the full address
+GL.geoLiberate("123 Example St", "address") # 'address' to parse the full address
 #Output: 123 EXAMPLE STREET
 
-GL.geoLiberate("123 Example St", 1) # '1' to parse the address house number
+GL.geoLiberate("123 Example St", "number") # 'number' to parse the address house number
 #Output: 123
 
-GL.geoLiberate("123 Example St", 0) # '0' to parse the full street
+GL.geoLiberate("123 Example St", "street") # 'street' to parse the full street
 #Output: EXAMPLE STREET
 ```
 The first argument is any address of data type string.
 
 The second argument, as you may have noticed, determines what gets parsed.
-* 2 - Full Address
-* 1 - House Number
-* 0 - Full Street
+* "address" - Full Address
+* "number" - House Number
+* "street" - Full Street
 
-The following function's first argument is a file containing a list of addresses. It automatically loops through the rows of addresses.
+The following function's first argument is a file containing a list of addresses. It automatically loops through the rows and parses each address.
 ```python
-GL.autoGeoLiberate("file.txt", 0, "output_file_name.txt") # '0' to parse full street name
+GL.autoGeoLiberate("file.txt", "street", "output_file_name.txt") # 'street' to parse full street name
 #If no output file name given, program will print all parsed addresses
 ```
 
@@ -38,7 +38,12 @@ Let's say 'file.txt' contains the following:
 321 N Johnson Aven
 123-4 2nd St
 ```
-
+Output would look like this:
+```
+123 BOB ROAD
+321 NORTH JOHNSON AVENUE
+123-4 2nd STREET
+```
 For that really lengthy list of addresses in a file, it's reccommended to use autoGeoLiberate() in your program and run in a cli with the flag `--status`(`-S` for short) to monitor the module's progress.
 
 ***For developmental purposes:***
@@ -49,10 +54,10 @@ address_object.getAddress()
 address_object.getAddressNum()
 address_object.getStreet()
 ```
-The attributes that can me applied to this GeoLiberator/ Address object return string values.
+What gets returned to this GeoLiberator/ Address object are string values.
 **Function Parameters:**
 ```python
-getAddress(log = '', mode=False)
+getAddress(log = '')
 ```
 The 'log' parameter is for entering in a file name to append all address results to a log file 
 The 'mode' parameter set to `True` will print the output *(Note: these functions will always return a value)*
