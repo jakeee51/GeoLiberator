@@ -1,11 +1,11 @@
 import setuptools
 
-with open("README.md", 'r') as fh:
-    long_description = fh.read()
+with open("README.md", 'r') as f:
+    long_description = f.read()
 
 setuptools.setup(
     name = "GeoLiberator",
-    version = "0.2.0",
+    version = "0.2.1",
     author = "David J. Morfe",
     author_email = "jakemorfe@gmail.com",
     license = "MIT",

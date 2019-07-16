@@ -3,9 +3,9 @@
 Author: David J. Morfe
 Application Name: GeoLiberator
 Functionality Purpose: Instill data quality upon address data
-Version: Alpha 0.2.0
+Version: Alpha 0.2.1
 '''
-#7/13/19
+#7/15/19
 
 import re
 import sys
@@ -13,7 +13,6 @@ import time
 
 ##t0 = time.process_time_ns()
 
-#Create load bar for autoGeoLiberate()
 #Account for word house numbers
 #Account for '331/River/NJ/Rd' and post cardinal direction
 #Account for '&' and 'STS' and multiple street types
@@ -52,17 +51,17 @@ class GeoLiberator:
     
     def __init__(self, addr):
         self.addr = str(addr)
-        self.states = {
-            'Mississippi': 'MS', 'Oklahoma': 'OK', 'Delaware': 'DE', 'Minnesota': 'MN', 'Illinois': 'IL', 'Arkansas': 'AR',
-            'New Mexico': 'NM', 'Indiana': 'IN', 'Maryland': 'MD', 'Louisiana': 'LA', 'Idaho': 'ID', 'Wyoming': 'WY',
-            'Tennessee': 'TN', 'Arizona': 'AZ', 'Iowa': 'IA', 'Michigan': 'MI', 'Kansas': 'KS', 'Utah': 'UT',
-            'Virginia': 'VA', 'Oregon': 'OR', 'Connecticut': 'CT', 'Montana': 'MT', 'California': 'CA',
-            'Massachusetts': 'MA', 'West Virginia': 'WV', 'South Carolina': 'SC', 'New Hampshire': 'NH',
-            'Wisconsin': 'WI', 'Vermont': 'VT', 'Georgia': 'GA', 'North Dakota': 'ND', 'Pennsylvania': 'PA',
-            'Florida': 'FL', 'Alaska': 'AK', 'Kentucky': 'KY', 'Hawaii': 'HI', 'Nebraska': 'NE', 'Missouri': 'MO',
-            'Ohio': 'OH', 'Alabama': 'AL', 'New York': 'NY', 'South Dakota': 'SD', 'Colorado': 'CO', 'New Jersey': 'NJ',
-            'Washington': 'WA', 'North Carolina': 'NC', 'District of Columbia': 'DC', 'Texas': 'TX', 'Nevada': 'NV',
-            'Maine': 'ME', 'Rhode Island': 'RI'}
+        self.states = {"Alabama": "AL", "Alaska": "AK", "Arizona": "AZ", "Arkansas": "AR", "California": "CA",
+                       "Colorado": "CO", "Connecticut": "CT", "Delaware": "DE", "District of Columbia": "DC",
+                       "Florida": "FL", "Georgia": "GA", "Hawaii": "HI", "Idaho": "ID", "Illinois": "IL",
+                       "Indiana": "IN", "Iowa": "IA", "Kansas": "KS", "Kentucky": "KY", "Louisiana": "LA",
+                       "Maine": "ME", "Maryland": "MD", "Massachusetts": "MA", "Michigan": "MI", "Minnesota": "MN",
+                       "Mississippi": "MS", "Missouri": "MO", "Montana": "MT", "Nebraska": "NE", "Nevada": "NV",
+                       "New Hampshire": "NH", "New Jersey": "NJ", "New Mexico": "NM", "New York": "NY",
+                       "North Carolina": "NC", "North Dakota": "ND", "Ohio": "OH", "Oklahoma": "OK", "Oregon": "OR",
+                       "Pennsylvania": "PA", "Rhode Island": "RI", "South Carolina": "SC", "South Dakota": "SD",
+                       "Tennessee": "TN", "Texas": "TX", "Utah": "UT", "Vermont": "VT", "Virginia": "VA",
+                       "Washington": "WA", "West Virginia": "WV", "Wisconsin": "WI", "Wyoming": "WY"}
         self.streetTypes = {"ROAD": ["ROAD","RD","RO"],
                             "AVENUE": ["AVENUE","AVEN","AVE","AV","AE"],
                             "DRIVE": ["DRIVE","DRIV","DR"],
@@ -87,7 +86,7 @@ class GeoLiberator:
                             "CLOSE": ["CLOSE","CLOS"], "VILLAGE": ["VILLAGE","VLG"],
                             "RIDGE": ["RIDGE","RDG"], "COVE": ["COVE","CV"],
                             "TRAIL": ["TRAIL","TRL"], "GREEN": ["GREEN","GRN"], "CAMP": ["CAMP","CP"],
-                            "STREET": ["STREET","STRE","STR","ST"],
+                            "STREET": ["STREET","STREE","STRE","STR","ST"],
                             "SLIP": ["SLIP"],"LOOP": ["LOOP"], "WAY": ["WAY"],"EST": ["EST"],"ROW": ["ROW"],"OVAL": ["OVAL"],"PATH": ["PATH"]}
         self.wordTypes = ['ARCADIA', 'ATLANTIC', 'ATLANTIC COMMONS', 'BATH', 'BAYSIDE',
                           'BAYVIEW', 'BAYWAY', 'BCH RESERVATION', 'BOARDWALK',
@@ -174,7 +173,7 @@ class GeoLiberator:
             new_find = "OTHER"
         return new_find
 
-    def getAddressNum(self, log='', mode=False):
+    def getAddressNum(self, log=''):
         get = (self.addr).upper(); new_addr_num = '' #Uppercase and create new address to return
         get = (re.sub(r"[\t!#$@%^*+=`~/]| +", ' ', get)).strip(' ') #Strip any anomalies
         get = re.sub(r"(?<=\d)(ND|RD|TH|RTH)", '', get) #Strip any char of ordinal numbers
@@ -219,20 +218,16 @@ class GeoLiberator:
         if new_addr_num == '':
             new_addr_num = "OTHER"
 
-        if log == '' and mode == True: #Print to standard output and return value
-            print(new_addr_num)
-        elif log != '': #Write to new or specfied file
+        if log != '': #Write to new or specfied file
             fileName = re.sub(r"\..+", '', log)
             if fileName.isdigit() or re.search(r'[\/:*?"<>|]', fileName):
                 fileName = "newly_parsed_address_numbers"
-            if mode == True: #Print to standard output as well
-                print(new_addr_num)
             nf = open(f"{fileName}.txt", 'a')
             nf.write(new_addr_num + '\n')
             nf.close()
         return str(new_addr_num)
 
-    def getStreet(self, log='', mode=False):
+    def getStreet(self, log=''):
         get = (self.addr).upper(); new_street = ''; saintFlag = False #Uppercase and create new address to return
         get = (re.sub(r"[\t!#$@%^*+=`~/]| +", ' ', get)).strip(' ') #Strip any anomalies
         get = re.sub(r"(?<=\d)(ND|RD|TH|RTH)", '', get) #Strip any char of ordinal numbers
@@ -251,20 +246,16 @@ class GeoLiberator:
             ordNum = self.ordinalAdd(str(re.search(r"\d+", new_street).group()))
             new_street = re.sub(r"\d+", ordNum, new_street)
 
-        if log == '' and mode == True: #Print to standard output and return value
-            print(new_street)
-        elif log != '': #Write to new or specfied file
+        if log != '': #Write to new or specfied file
             fileName = re.sub(r"\..+", '', log)
             if fileName.isdigit() or re.search(r'[\/:*?"<>|]', fileName):
                 fileName = "newly_parsed_streets"
-            if mode == True: #Print to standard output as well
-                print(new_street)
             nf = open(f"{fileName}.txt", 'a')
             nf.write(new_street + '\n')
             nf.close()
         return new_street
 
-    def getAddress(self, log='', mode=False):
+    def getAddress(self, log=''):
         get = (self.addr).upper(); new_addr = '' #Uppercase and create new address to return
         get = (re.sub(r"[\t!#$@%^*+=`~/]| +", ' ', get)).strip(' ') #Strip any anomalies
         get = re.sub(r"(?<=\d)(ND|RD|TH|RTH)", '', get) #Strip any char of ordinal numbers
@@ -275,14 +266,10 @@ class GeoLiberator:
         else:
             new_addr = "OTHER"
 
-        if log == '' and mode == True: #Print to standard output and return value
-            print(new_addr)
-        elif log != '': #Write to new or specfied file
+        if log != '': #Write to new or specfied file
             fileName = re.sub(r"\..+", '', log)
-            if fileName.isdigit() or re.search(r'[\/:*?"<>|]', fileName):
+            if fileName == '' or fileName.isdigit() or re.search(r'[\/:*?"<>|]', fileName):
                 fileName = "newly_parsed_addresses"
-            if mode == True: #Print to standard output as well
-                print(new_addr)
             nf = open(f"{fileName}.txt", 'a')
             nf.write(new_addr + '\n')
             nf.close()
@@ -296,13 +283,13 @@ def file_len(file_name):
     return i + 1
 
 #Takes text file as input and switch argument to determine which address property to be standardized
-def autoGeoLiberate(file_path, switch=2, write=''):
+def autoGeoLiberate(file_path, parse="address", write=''):
     mode = True
     if write != '':
         mode = False
     with open(file_path) as f:
         lines = f.readlines()
-        if len(sys.argv) == 2:
+        if len(sys.argv) == 2 and write != '':
             if sys.argv[1] == '--status' or sys.argv[1] == "-S":
                 FL = file_len(file_path)
                 barIncr = int(FL * .025); barNum = 0; dashNum = 40; c = 0; lc = 0
@@ -317,34 +304,36 @@ def autoGeoLiberate(file_path, switch=2, write=''):
                     elif lc == FL:
                        print('\r|' + ('█' * 40) + '|' + " [100%]  "); sys.stdout.flush()
                     adr = GeoLiberator(str(line))
-                    if switch == 2:
-                        adr.getAddress(log=write, mode=mode)
-                    elif switch == 1:
-                        adr.getAddressNum(log=write, mode=mode)
-                    elif switch == 0:
-                        adr.getStreet(log=write, mode=mode)
+                    if parse.lower() == "address":
+                        adr.getAddress(log=write)
+                    elif parse.lower() == "number":
+                        adr.getAddressNum(log=write)
+                    elif parse.lower() == "street":
+                        adr.getStreet(log=write)
         else:
             if mode == False:
                 print("Running...")
             for line in lines:
                 adr = GeoLiberator(str(line))
-                if switch == 2:
-                    adr.getAddress(log=write, mode=mode)
-                elif switch == 1:
-                    adr.getAddressNum(log=write, mode=mode)
-                elif switch == 0:
-                    adr.getStreet(log=write, mode=mode)
+                if parse.lower() == "address":
+                    out = adr.getAddress(log=write)
+                elif parse.lower() == "number":
+                    out = adr.getAddressNum(log=write)
+                elif parse.lower() == "street":
+                    out = adr.getStreet(log=write)
+                if mode == True:
+                    print(out)
             print("Done!")
 
 #Takes address as input and switch argument to determine which address property to be standardized
-def geoLiberate(addr, switch=2):
+def geoLiberate(addr, parse="address"):
     adr = GeoLiberator(str(addr))
-    if switch == 2:
-        adr.getAddress(mode=True)
-    elif switch == 1:
-        adr.getAddressNum(mode=True)
-    elif switch == 0:
-        adr.getStreet(mode=True)
+    if parse.lower() == "address":
+        adr.getAddress()
+    elif parse.lower() == "number":
+        adr.getAddressNum()
+    elif parse.lower() == "street":
+        adr.getStreet()
 
 ##t1 = time.process_time_ns()
 ##total = t1 - t0
