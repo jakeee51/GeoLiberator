@@ -73,23 +73,23 @@ def mergeMatch():
             n3.write("OTHER\n")
     n1.close(); n2.close(); n3.close()
 
-def basicTest():
+def basicTest(mode=True):
     catcher = []
     catcher1 = []
     catcher2 = []
     catcher3 = []
     for addr in anon_street_trials:
-        adr = GeoLiberator(addr)
-        catcher.append(adr.getStreet(mode=mSet))
+        adr = GeoLiberator(addr).getStreet()
+        catcher.append(adr)
     for addr in cardinal_trials:
-        adr = GeoLiberator(addr)
-        catcher1.append(adr.getStreet(mode=mSet))
+        adr = GeoLiberator(addr).getStreet()
+        catcher1.append(adr)
     for addr in nc_trials:
-        adr = GeoLiberator(addr)
-        catcher1.append(adr.getStreet(mode=mSet))
+        adr = GeoLiberator(addr).getStreet()
+        catcher1.append(adr)
     for addr in ordinal_trials:
-        adr = GeoLiberator(addr)
-        catcher1.append(adr.getStreet(mode=mSet))
+        adr = GeoLiberator(addr).getStreet()
+        catcher1.append(adr)
     c = 0; gg = 0; C = 0; ggg = 0
     for i in checker_street: #Check street results
         if i == catcher1[c]:
@@ -99,49 +99,60 @@ def basicTest():
         if i == catcher[C]:
             ggg += 1
         C += 1
+    if mode == True:
+        for result in catcher:
+            print(result)
+        for result in catcher1:
+            print(result)
     if gg == 18 and ggg == 26:
         print("\n*ALL Street Name Trials Successful!*\n")
     print("________________________________\n\n")
     for addr in cardinal_trials:
-        adr = GeoLiberator(addr)
-        catcher2.append(adr.getAddressNum(mode=mSet))
+        adr = GeoLiberator(addr).getAddressNum()
+        catcher2.append(adr)
     for addr in nc_trials:
-        adr = GeoLiberator(addr)
-        catcher2.append(adr.getAddressNum(mode=mSet))
+        adr = GeoLiberator(addr).getAddressNum()
+        catcher2.append(adr)
     for addr in ordinal_trials:
-        adr = GeoLiberator(addr)
-        catcher2.append(adr.getAddressNum(mode=mSet))
+        adr = GeoLiberator(addr).getAddressNum()
+        catcher2.append(adr)
     c = 0; gg = 0
     for i in checker_num: #Check address number results
         if i == catcher2[c]:
             gg += 1
         c += 1
+    if mode == True:
+        for result in catcher2:
+            print(result)
     if gg == 18:
         print("\n*ALL Address Number Trials Successful!*\n")
     print("________________________________\n\n")
     for addr in cardinal_trials:
-        adr = GeoLiberator(addr)
-        catcher3.append(adr.getAddress(mode=mSet))
+        adr = GeoLiberator(addr).getAddress()
+        catcher3.append(adr)
     for addr in nc_trials:
-        adr = GeoLiberator(addr)
-        catcher3.append(adr.getAddress(mode=mSet))
+        adr = GeoLiberator(addr).getAddress()
+        catcher3.append(adr)
     for addr in ordinal_trials:
-        adr = GeoLiberator(addr)
-        catcher3.append(adr.getAddress(mode=mSet))
+        adr = GeoLiberator(addr).getAddress()
+        catcher3.append(adr)
     c = 0; gg = 0
     for i in checker_address: #Check address results
         if i == catcher3[c]:
             gg += 1
         c += 1
+    if mode == True:
+        for result in catcher2:
+            print(result)
     if gg == 18:
         print("\n*ALL Address Trials Successful!*\n")
 
-GeoLiberator("123-4E 2 RD").getAddress(mode=mSet)
-GeoLiberator("123E1RD").getAddress(mode=mSet)
+GeoLiberator("123-4E 2 RD").getAddress()
+GeoLiberator("123E1RD").getAddress()
 
 ##mergeMatch()
-##autoGeoLiberate("hold.txt", 2)
-##basicTest()
+##autoGeoLiberate("hold.txt", "address")
+basicTest(mode=False)
 
 t1 = time.process_time()
 total = t1 - t0
