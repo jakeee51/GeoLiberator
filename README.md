@@ -44,9 +44,14 @@ Output would look like this:
 321 NORTH JOHNSON AVENUE
 123-4 2nd STREET
 ```
+<<<<<<< HEAD
+For that really lengthy list of addresses in a file, it's reccommended to use autoGeoLiberate() in your program and run it in a cli with the flag `--status`(`-S` for short) to monitor the module's progress. Like so: `python my_progam.py --status`
+=======
 For that really lengthy list of addresses in a file, it's reccommended to use autoGeoLiberate() in your program and run in a cli with the flag `--status`(`-S` for short) to monitor the module's progress.
+>>>>>>> 5e22c9458e468a171f861f051da328abf3602f5f
 
 ***For developmental purposes:***
+
 ```python
 address_object = GL.GeoLiberator("123 Example St") # Create a 'GeoLiberator Object' with address as an argument
 #This new address object can then be parsed using the dot operator like so:
@@ -54,13 +59,17 @@ address_object.getAddress()
 address_object.getAddressNum()
 address_object.getStreet()
 ```
+<<<<<<< HEAD
+WThese member functions return a string value.
+=======
 What gets returned to this GeoLiberator/ Address object are string values.
+>>>>>>> 5e22c9458e468a171f861f051da328abf3602f5f
 **Function Parameters:**
 ```python
 getAddress(log = '')
 ```
-The 'log' parameter is for entering in a file name to append all address results to a log file 
-The 'mode' parameter set to `True` will print the output *(Note: these functions will always return a value)*
+The 'log' parameter is for entering in a file name to __append__ all address results to a log file.
+*(Note: these functions will always return a value)*
 
 # Copyright
 Copyright (c) 2019 The Python Packaging Authority. Released under the MIT License.
