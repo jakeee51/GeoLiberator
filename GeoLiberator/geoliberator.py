@@ -3,7 +3,7 @@
 Author: David J. Morfe
 Application Name: GeoLiberator
 Functionality Purpose: Instill data quality upon address data
-Version: Alpha 0.2.1
+Version: Alpha 0.2.2
 '''
 #7/15/19
 
