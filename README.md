@@ -56,6 +56,7 @@ address_object.getAddressNum()
 address_object.getStreet()
 ```
 These member functions return a string value.
+
 **Function Parameters:**
 ```python
 getAddress(log = '')
