@@ -3,7 +3,7 @@
 Author: David J. Morfe
 Application Name: GeoLiberator
 Functionality Purpose: Instill data quality upon address data
-Version: Beta 0.2.3
+Version: Beta 0.2.4
 '''
 #7/15/19
 
@@ -19,7 +19,12 @@ import time
 #Option to append borough, state, zip, based on argument
 #Create custom address formatter
 
+reason = ["Invalid parse argument given"]
+
 class AddressError(BaseException):
+    pass
+
+class ArgumentError(Exception):
     pass
 
 class Unbuffered(object):
@@ -62,13 +67,13 @@ class GeoLiberator:
                        "Pennsylvania": "PA", "Rhode Island": "RI", "South Carolina": "SC", "South Dakota": "SD",
                        "Tennessee": "TN", "Texas": "TX", "Utah": "UT", "Vermont": "VT", "Virginia": "VA",
                        "Washington": "WA", "West Virginia": "WV", "Wisconsin": "WI", "Wyoming": "WY"}
-        self.streetTypes = {"ROAD": ["ROAD","RD","RO"],
+        self.streetTypes = {"HEIGHTS": ["HEIGHTS","HTS"],
+                            "ROAD": ["ROAD","RD","RO"],
                             "AVENUE": ["AVENUE","AVEN","AVE","AV","AE"],
                             "DRIVE": ["DRIVE","DRIV","DR"],
                             "PLACE": ["PLACE","PLAC","PLCE","PLC","PL"],
                             "BOULEVARD": ["BOULEVARD","BLVD","BOUL","BLV","BO"],
                             "COURT": ["COURT","CRT","CT"],
-                            "HEIGHTS": ["HEIGHTS","HTS"],
                             "PARKWAY": ["PARKWAY","PKWAY","PKWY","PWAY","PWY","PKY"],
                             "HIGHWAY": ["HIGHWAY","HWAY","HWY"],
                             "EXPRESSWAY": ["EXPRESSWAY","EXPRESWY","EXPRESWAY","EXPREWAY","EXPWA","EXPWY","EXPY","EXWY","EWY","EXP"],
@@ -176,7 +181,7 @@ class GeoLiberator:
     def getAddressNum(self, log=''):
         get = (self.addr).upper(); new_addr_num = '' #Uppercase and create new address to return
         get = (re.sub(r"[\t!#$@%^*+=`~/]| +", ' ', get)).strip(' ') #Strip any anomalies
-        get = re.sub(r"(?<=\d)(ND|RD|TH|RTH)", '', get) #Strip any char of ordinal numbers
+        get = re.sub(r"(?<=2)(ND)|(?<=3)(RD)|(?<=[4-9]|0)(TH|RTH)", '', get) #Strip any char of ordinal numbers
         for val in self.wordTypes:
             if type(val) == dict:
                 streA = '|'.join(val["ESPLANADE"])
@@ -230,7 +235,7 @@ class GeoLiberator:
     def getStreet(self, log=''):
         get = (self.addr).upper(); new_street = ''; saintFlag = False #Uppercase and create new address to return
         get = (re.sub(r"[\t!#$@%^*+=`~/]| +", ' ', get)).strip(' ') #Strip any anomalies
-        get = re.sub(r"(?<=\d)(ND|RD|TH|RTH)", '', get) #Strip any char of ordinal numbers
+        get = re.sub(r"(?<=2)(ND)|(?<=3)(RD)|(?<=[4-9]|0)(TH|RTH)", '', get) #Strip any char of ordinal numbers
         if re.search(r"(\W|^)(ST|SNT)\W", get): #Check for 'Saint'
             get1 = re.sub(r"(\W|^)(ST|SNT)\W", ' ', get)
             saintFlag = True
@@ -258,7 +263,6 @@ class GeoLiberator:
     def getAddress(self, log=''):
         get = (self.addr).upper(); new_addr = '' #Uppercase and create new address to return
         get = (re.sub(r"[\t!#$@%^*+=`~/]| +", ' ', get)).strip(' ') #Strip any anomalies
-        get = re.sub(r"(?<=\d)(ND|RD|TH|RTH)", '', get) #Strip any char of ordinal numbers
         gS = GeoLiberator(get).getStreet()
         gAN = GeoLiberator(get).getAddressNum()
         if gAN != "OTHER" and gS != "OTHER":
@@ -285,6 +289,8 @@ def file_len(file_name):
 #Takes text file as input and switch argument to determine which address property to be standardized
 def autoGeoLiberate(file_path, parse="address", write=''):
     mode = True
+    if not re.search(r"address|number|street", parse):
+        raise ArgumentError(reason[0])
     if write != '':
         mode = False
     with open(file_path) as f:
@@ -328,13 +334,16 @@ def autoGeoLiberate(file_path, parse="address", write=''):
 #Takes address as input and switch argument to determine which address property to be standardized
 def geoLiberate(addr, parse="address"):
     adr = GeoLiberator(str(addr))
-    if parse.lower() == "address":
-        out = adr.getAddress()
-    elif parse.lower() == "number":
-        out = adr.getAddressNum()
-    elif parse.lower() == "street":
-        out = adr.getStreet()
-    print(out)
+    try:
+        if parse.lower() == "address":
+            out = adr.getAddress()
+        elif parse.lower() == "number":
+            out = adr.getAddressNum()
+        elif parse.lower() == "street":
+            out = adr.getStreet()
+        print(out)
+    except (AttributeError, UnboundLocalError):
+        raise ArgumentError(reason[0])
 
 ##t1 = time.process_time_ns()
 ##total = t1 - t0
