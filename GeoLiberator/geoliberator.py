@@ -13,7 +13,6 @@ import time
 
 ##t0 = time.process_time_ns()
 
-#parse="address"
 #Account for word house numbers
 #Account for '331/River/NJ/Rd' and post cardinal direction
 #Account for '&' and 'STS' and multiple street types
