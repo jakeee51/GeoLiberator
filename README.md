@@ -60,7 +60,6 @@ These member functions return a string value.
 ```python
 getAddress(log = '')
 ```
-The 'log' parameter is for entering in a file name to __append__ all address results to a log file.
 The 'log' parameter is for entering in a file name to _append_ all address results to a log file.
 *(Note: these functions will always return a value)*
 
