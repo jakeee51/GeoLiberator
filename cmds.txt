@@ -1,4 +1,3 @@
 Run in top level directory:
 python setup.py sdist bdist_wheel
 python -m twine upload dist/*
-pip install --upgrade GeoLiberator
