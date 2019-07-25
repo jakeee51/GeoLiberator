@@ -3,9 +3,9 @@
 Author: David J. Morfe
 Application Name: GeoLiberator
 Functionality Purpose: Instill data quality upon address data
-Version: Beta 0.2.4
+Version: Beta 0.2.5
 '''
-#7/16/19
+#7/25/19
 
 import re
 import sys
@@ -13,8 +13,7 @@ import time
 
 ##t0 = time.process_time_ns()
 
-#Account for word house numbers
-#Account for '331/River/NJ/Rd' and post cardinal direction
+#Account for post cardinal direction
 #Account for '&' and 'STS' and multiple street types
 #Option to append borough, state, zip, based on argument
 #Create custom address formatter
@@ -38,7 +37,6 @@ class Unbuffered(object):
        self.stream.flush()
    def __getattr__(self, attr):
        return getattr(self.stream, attr)
-
 sys.stdout = Unbuffered(sys.stdout)
 
 class GeoLiberator:
@@ -137,6 +135,24 @@ class GeoLiberator:
             nn = num + 'th'
         return nn
 
+    def getState(self, log=''):
+        get = (self.addr).upper(); full_state = '' #Uppercase and create new address to return
+        get = (re.sub(r"[\t!#$@%^*+=`~/]+| +", ' ', get)).strip(' ') #Strip any anomalies
+        for key, val in self.states.items():
+            if re.search(fr"\b{val}\b", get):
+                full_state = key
+        if full_state == '':
+            full_state = "OTHER"
+
+        if log != '': #Write to new or specfied file
+            fileName = re.sub(r"\..+", '', log)
+            if fileName.isdigit() or re.search(r'[\/:*?"<>|]', fileName):
+                fileName = "newly_parsed_states"
+            nf = open(f"{fileName}.txt", 'a')
+            nf.write(full_state + '\n')
+            nf.close()
+        return str(full_state).upper()
+
     def searchCycle(self, g, sF):
         new_find = ''
         if sF == False:
@@ -180,8 +196,15 @@ class GeoLiberator:
 
     def getAddressNum(self, log=''):
         get = (self.addr).upper(); new_addr_num = '' #Uppercase and create new address to return
-        get = (re.sub(r"[\t!#$@%^*+=`~/]| +", ' ', get)).strip(' ') #Strip any anomalies
-        get = re.sub(r"(?<=2)(ND)|(?<=3)(RD)|(?<=[4-9]|0)(TH|RTH)", '', get) #Strip any char of ordinal numbers
+        if not get[0].isdigit():
+            for key, val in self.states.items():
+                if re.search(fr"^{val}\b", get):
+                    get = re.sub(fr"^{val}(\W|$)", ' ', get)
+                    get = (re.sub(r"[\t!#$@%^*+=`~/]+| +", ' ', get)).strip(' ') #Strip any anomalies
+                    get = re.sub(r"(?<=2)(ND)|(?<=3)(RD)|(?<=[4-9]|0)(TH|RTH)", '', get) #Strip any char of ordinal numbers
+        else:
+            get = (re.sub(r"[\t!#$@%^*+=`~/]+| +", ' ', get)).strip(' ') #Strip any anomalies
+            get = re.sub(r"(?<=2)(ND)|(?<=3)(RD)|(?<=[4-9]|0)(TH|RTH)", '', get) #Strip any char of ordinal numbers
         for val in self.wordTypes:
             if type(val) == dict:
                 streA = '|'.join(val["ESPLANADE"])
@@ -191,7 +214,7 @@ class GeoLiberator:
                     wType = grab.group(1)
                 group1 = fr"(^\d+([- ]\d+)?)(?=[NSEW]\.? ?\d+ ?({wType})\.?(\W|$))"
                 group2 = fr"(^\d+([- ]\d+)?)(?= ((\w+\.? ?)+)({wType})\.?(\W|$))"
-                group3 = r"(?=\d+([ -]\d+)? (AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF ([A-Z]+ )?[A-Z]+)(?=\W|$))^\d+([- ]\d+)?"
+                group3 = r"(?=\d+([- ]\d+)? (AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF ([A-Z]+ )?[A-Z]+)(?=\W|$))^\d+([- ]\d+)?"
                 gANpat1 = re.search(fr"{group1}|{group2}", get)
                 gANpat2 = re.search(fr"{group3}", get)
                 if gANpat1:
@@ -202,7 +225,7 @@ class GeoLiberator:
                 sType = '|'.join(val)
                 group1 = fr"(^\d+([- ]\d+)?)(?=[NSEW]\.? ?\d+ ?({sType})\.?(\W|$))"
                 group2 = fr"(^\d+([- ]\d+)?)(?= ((\w+\.? ?)+)({sType})\.?(\W|$))"
-                group3 = r"(?=\d+([ -]\d+)? (AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF ([A-Z]+ )?[A-Z]+)(?=\W|$))^\d+([- ]\d+)?"
+                group3 = r"(?=\d+([- ]\d+)? (AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF ([A-Z]+ )?[A-Z]+)(?=\W|$))^\d+([- ]\d+)?"
                 gANpat1 = re.search(fr"{group1}|{group2}", get)
                 gANpat2 = re.search(fr"{group3}", get)
                 if gANpat1:
@@ -211,11 +234,10 @@ class GeoLiberator:
                     new_addr_num = gANpat2.group().replace(' ', '-')
         for key, val in self.streetTypes.items():
             sType = '|'.join(val)
-            group1 = fr"(^\d+([- ]\d+)?)(?=[NSEW]\.? ?\d+ ?({sType})\.?(\W|$))"
-            group2 = fr"(^\d+([- ]\d+)?)(?= ((\w+\.? ?)+)({sType})\.?(\W|$))"
-            group3 = r"(?=\d+([ -]\d+)? (AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF ([A-Z]+ )?[A-Z]+)(?=\W|$))^\d+([- ]\d+)?"
-            gANpat1 = re.search(fr"{group1}|{group2}", get)
-            gANpat2 = re.search(fr"{group3}", get)
+            group1 = fr"(^\d+([- ]\d+)?)(?=[NSEW]\.? ?\d+ ?({sType})\.?(\W|$))|(^\d+([- ]\d+)?)(?= ((\w+\.? ?)+)({sType})\.?(\W|$))"
+            group2 = r"(?=\d+([- ]\d+)? (AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF ([A-Z]+ )?[A-Z]+)(?=\W|$))^\d+([- ]\d+)?"
+            gANpat1 = re.search(str(group1), get)
+            gANpat2 = re.search(group2, get)
             if gANpat1:
                 new_addr_num = gANpat1.group().replace(' ', '-')
             elif gANpat2:
@@ -234,8 +256,15 @@ class GeoLiberator:
 
     def getStreet(self, log=''):
         get = (self.addr).upper(); new_street = ''; saintFlag = False #Uppercase and create new address to return
-        get = (re.sub(r"[\t!#$@%^*+=`~/]| +", ' ', get)).strip(' ') #Strip any anomalies
-        get = re.sub(r"(?<=2)(ND)|(?<=3)(RD)|(?<=[4-9]|0)(TH|RTH)", '', get) #Strip any char of ordinal numbers
+        if '/' in get:
+            for key, val in self.states.items():
+                if re.search(fr"\b{val}\b", get):
+                    get = re.sub(fr"(^|\W){val}(\W|$)", ' ', get)
+                    get = (re.sub(r"[\t!#$@%^*+=`~/]+| +", ' ', get)).strip(' ') #Strip any anomalies
+                    get = re.sub(r"(?<=2)(ND)|(?<=3)(RD)|(?<=[4-9]|0)(TH|RTH)", '', get) #Strip any char of ordinal numbers
+        else:
+            get = (re.sub(r"[\t!#$@%^*+=`~/]+| +", ' ', get)).strip(' ') #Strip any anomalies
+            get = re.sub(r"(?<=2)(ND)|(?<=3)(RD)|(?<=[4-9]|0)(TH|RTH)", '', get) #Strip any char of ordinal numbers
         if re.search(r"(\W|^)(ST|SNT)\W", get): #Check for 'Saint'
             get1 = re.sub(r"(\W|^)(ST|SNT)\W", ' ', get)
             saintFlag = True
@@ -262,7 +291,6 @@ class GeoLiberator:
 
     def getAddress(self, log=''):
         get = (self.addr).upper(); new_addr = '' #Uppercase and create new address to return
-        get = (re.sub(r"[\t!#$@%^*+=`~/]| +", ' ', get)).strip(' ') #Strip any anomalies
         gS = GeoLiberator(get).getStreet()
         gAN = GeoLiberator(get).getAddressNum()
         if gAN != "OTHER" and gS != "OTHER":
@@ -299,16 +327,18 @@ def autoGeoLiberate(file_path, parse="address", write=''):
             if sys.argv[1] == '--status' or sys.argv[1] == "-S":
                 FL = file_len(file_path)
                 barIncr = int(FL * .025); barNum = 0; dashNum = 40; c = 0; lc = 0
+                print('|' + ('-' * 40) + '|' + " [0.00%]", end=''); sys.stdout.flush()
                 for line in lines:
                     perc = (lc/FL)
-                    bar = '|' + ('█' * barNum) + ('-' * dashNum) + '|' + " [{:>.2%}]".format(perc)
+                    bar = '\r|' + ('█' * barNum) + ('-' * dashNum) + '|' + " [{:>.2%}]".format(perc)
+                    print(bar, end=''); sys.stdout.flush()
                     c += 1; lc += 1
                     if c == barIncr:
-                       if barNum < 39:
-                           c = 0; barNum += 1; dashNum -= 1
-                           print(f"\r{bar}", end=''); sys.stdout.flush()
+                        if barNum < 39:
+                            c = 0; barNum += 1; dashNum -= 1
+                            print(bar, end=''); sys.stdout.flush()
                     elif lc == FL:
-                       print('\r|' + ('█' * 40) + '|' + " [100%]  "); sys.stdout.flush()
+                        print('\r|' + ('█' * 40) + '|' + " [100%]  "); sys.stdout.flush()
                     adr = GeoLiberator(str(line))
                     if parse.lower() == "address":
                         adr.getAddress(log=write)
@@ -316,6 +346,8 @@ def autoGeoLiberate(file_path, parse="address", write=''):
                         adr.getAddressNum(log=write)
                     elif parse.lower() == "street":
                         adr.getStreet(log=write)
+                    elif parse.lower() == "state":
+                        adr.getState(log=write)
         else:
             if mode == False:
                 print("Running...")
@@ -327,6 +359,8 @@ def autoGeoLiberate(file_path, parse="address", write=''):
                     out = adr.getAddressNum(log=write)
                 elif parse.lower() == "street":
                     out = adr.getStreet(log=write)
+                elif parse.lower() == "state":
+                    out = adr.getState(log=write)
                 if mode == True:
                     print(out)
             print("Done!")
@@ -341,6 +375,8 @@ def geoLiberate(addr, parse="address"):
             out = adr.getAddressNum()
         elif parse.lower() == "street":
             out = adr.getStreet()
+        elif parse.lower() == "state":
+            out = adr.getState()
         print(out)
     except (AttributeError, UnboundLocalError):
         raise ArgumentError(reason[0])
