@@ -5,7 +5,8 @@ address = "123 N Main St"
 #0 - Street Name
 #1 - House Number
 #2 - Full Address
-geoLiberate(address, switch=0)
+geoLiberate(address, parse="street")
+print("____________________")
 
 #getStreet()
 #getAddressNum()
@@ -22,6 +23,6 @@ for i in range(len(lines)):
     nlines = lines[i].strip('\n')
     print(f"{nlines} --> {cmp[i]}")
 
-#Input File
-#Output File
-autoGeoLiberate(file_path="sample.txt", switch=2, write="write_to_file.txt")
+#file_path = Input File
+#write = Output File
+autoGeoLiberate(file_path="sample.txt", parse="address", write="write_to_file.txt")
