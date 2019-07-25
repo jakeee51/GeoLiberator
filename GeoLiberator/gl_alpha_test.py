@@ -147,12 +147,12 @@ def basicTest(mode=True):
     if gg == 18:
         print("\n*ALL Address Trials Successful!*\n")
 
-GeoLiberator("123-4E 2 RD").getAddress()
-GeoLiberator("123E1RD").getAddress()
+print(GeoLiberator("123-4E 2 RD").getAddress())
+print(GeoLiberator("123E1RD").getAddress())
 
 ##mergeMatch()
 ##autoGeoLiberate("hold.txt", "address")
-basicTest(mode=False)
+##basicTest(mode=False)
 
 t1 = time.process_time()
 total = t1 - t0
