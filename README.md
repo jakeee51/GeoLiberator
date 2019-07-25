@@ -21,7 +21,7 @@ GL.geoLiberate("123 Example St", "street") # 'street' to parse the full street
 ```
 The first argument is any address of data type string.
 
-The second argument, as you may have noticed, determines what gets parsed. *(Note: if no argument given, parses address by default)*
+The second argument, as you may have noticed, determines what gets parsed. *(Note: if no argument given, parses full address by default)*
 * "address" - Full Address
 * "number" - House Number
 * "street" - Full Street
