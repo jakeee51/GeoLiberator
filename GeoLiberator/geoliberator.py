@@ -3,9 +3,9 @@
 Author: David J. Morfe
 Application Name: GeoLiberator
 Functionality Purpose: Instill data quality upon address data
-Version: Beta 0.2.5
+Version: Beta 0.2.6
 '''
-#7/25/19
+#7/26/19
 
 import re
 import sys
@@ -212,19 +212,18 @@ class GeoLiberator:
                 grab = re.search(fr"(?!\d)?\W?({streA}|{streB})(\W|$)", get); wType = ''
                 if grab:
                     wType = grab.group(1)
-                group1 = fr"(^\d+([- ]\d+)?)(?=[NSEW]\.? ?\d+ ?({wType})\.?(\W|$))"
-                group2 = fr"(^\d+([- ]\d+)?)(?= ((\w+\.? ?)+)({wType})\.?(\W|$))"
-                group3 = r"(?=\d+([- ]\d+)? (AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF ([A-Z]+ )?[A-Z]+)(?=\W|$))^\d+([- ]\d+)?"
-                gANpat1 = re.search(fr"{group1}|{group2}", get)
-                gANpat2 = re.search(fr"{group3}", get)
-                if gANpat1:
-                    new_addr_num = gANpat1.group().replace(' ', '-')
-                elif gANpat2:
-                    new_addr_num = gANpat2.group().replace(' ', '-')
+                    group1 = fr"(^\d+([- ]\d+)?)(?= ?[NSEW][. ] ?({wType})\.?(\W|$))"
+                    group2 = fr"(^\d+([- ]\d+)?)(?= (NORTH |SOUTH |EAST |WEST )?({val})\.?(\W|$))"
+                    group3 = r"(?=\d+([- ]\d+)? (AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF ([A-Z]+ )?[A-Z]+)(?=\W|$))^\d+([- ]\d+)?"
+                    gANpat1 = re.search(fr"{group1}|{group2}", get)
+                    gANpat2 = re.search(fr"{group3}", get)
+                    if gANpat1:
+                        new_addr_num = gANpat1.group().replace(' ', '-')
+                    elif gANpat2:
+                        new_addr_num = gANpat2.group().replace(' ', '-')
             else:
-                sType = '|'.join(val)
-                group1 = fr"(^\d+([- ]\d+)?)(?=[NSEW]\.? ?\d+ ?({sType})\.?(\W|$))"
-                group2 = fr"(^\d+([- ]\d+)?)(?= ((\w+\.? ?)+)({sType})\.?(\W|$))"
+                group1 = fr"(^\d+([- ]\d+)?)(?= ?[NSEW][. ] ?({val})\.?(\W|$))"
+                group2 = fr"(^\d+([- ]\d+)?)(?= (NORTH |SOUTH |EAST |WEST )?({val})\.?(\W|$))"
                 group3 = r"(?=\d+([- ]\d+)? (AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF ([A-Z]+ )?[A-Z]+)(?=\W|$))^\d+([- ]\d+)?"
                 gANpat1 = re.search(fr"{group1}|{group2}", get)
                 gANpat2 = re.search(fr"{group3}", get)
@@ -234,10 +233,11 @@ class GeoLiberator:
                     new_addr_num = gANpat2.group().replace(' ', '-')
         for key, val in self.streetTypes.items():
             sType = '|'.join(val)
-            group1 = fr"(^\d+([- ]\d+)?)(?=[NSEW]\.? ?\d+ ?({sType})\.?(\W|$))|(^\d+([- ]\d+)?)(?= ((\w+\.? ?)+)({sType})\.?(\W|$))"
-            group2 = r"(?=\d+([- ]\d+)? (AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF ([A-Z]+ )?[A-Z]+)(?=\W|$))^\d+([- ]\d+)?"
-            gANpat1 = re.search(str(group1), get)
-            gANpat2 = re.search(group2, get)
+            group1 = fr"(^\d+([- ]\d+)?)(?= ?[NSEW][. ] ?\d+ ?({sType})\.?(\W|$))"
+            group2 = fr"(^\d+([- ]\d+)?)(?=( ?(NORTH|SOUTH|EAST|WEST)? )((\w+\.? ?)+)({sType})\.?(\W|$))"
+            group3 = r"(?=\d+([- ]\d+)? (AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF ([A-Z]+ )?[A-Z]+)(?=\W|$))^\d+([- ]\d+)?"
+            gANpat1 = re.search(fr"{group1}|{group2}", get)
+            gANpat2 = re.search(group3, get)
             if gANpat1:
                 new_addr_num = gANpat1.group().replace(' ', '-')
             elif gANpat2:
