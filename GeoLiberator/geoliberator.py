@@ -242,7 +242,7 @@ class GeoLiberator:
         for key, val in self.streetTypes.items(): #Regular Street Names
             sType = '|'.join(val)
             group = fr"(^\d+([- ]\d+)?)(?= ?[NSEW][. ]([A-Z]+ )+({sType})\.?(\W|$))"
-            group1 = fr"(^\d+([- ]\d+)?)(?= ?[NSEW][. ] ?\d+ ?({sType})\.?(\W|$))"
+            group1 = fr"(^\d+([- ]\d+)?)(?= ?[NSEW][. ]? ?\d+ ?({sType})\.?(\W|$))"
             group2 = fr"(^\d+([- ]\d+)?)(?=( ?(NORTH|SOUTH|EAST|WEST)? )((\w+\.? ?)+)({sType})\.?(\W|$))"
             group3 = r"(?=\d+([- ]\d+)? (AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF ([A-Z]+ )?[A-Z]+)(?=\W|$))^\d+([- ]\d+)?"
             gANpat1 = re.search(fr"{group}|{group1}|{group2}", get)
