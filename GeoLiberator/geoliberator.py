@@ -3,9 +3,9 @@
 Author: David J. Morfe
 Application Name: GeoLiberator
 Functionality Purpose: Instill data quality upon address data
-Version: Beta 0.2.7
+Version: Beta 0.2.8
 '''
-#7/29/19
+#8/1/19
 
 import re
 import sys
@@ -125,6 +125,8 @@ class GeoLiberator:
 
     def ordinalAdd(self, num):
         nn = ''
+        if num == '11' or num == '12' or num == '13':
+            return num + 'th'
         if re.search(r"(?<!1)1$", num):
             nn = num + 'st'
         elif num[-1] == '2':
@@ -205,10 +207,12 @@ class GeoLiberator:
                 if re.search(fr"^{val}\b", get):
                     get = re.sub(fr"^{val}(\W|$)", ' ', get)
                     get = (re.sub(r"[\t!#$@%^*+=`~/]+| +", ' ', get)).strip(' ') #Strip any anomalies
-                    get = re.sub(r"(?<=2)(ND)|(?<=3)(RD)|(?<=[4-9]|0)(TH|RTH)", '', get) #Strip any char of ordinal numbers
+                    get = re.sub(r"(?<=2)(ND)|(?<=[4-9]|0)(TH|RTH)", '', get) #Strip any char of ordinal numbers
+                    get = re.sub(r"(?<=[^1]3)(RD)", '', get); get = re.sub(r"(?<=11)(TH)", '', get)
         else:
             get = (re.sub(r"[\t!#$@%^*+=`~/]+| +", ' ', get)).strip(' ') #Strip any anomalies
-            get = re.sub(r"(?<=2)(ND)|(?<=3)(RD)|(?<=[4-9]|0)(TH|RTH)", '', get) #Strip any char of ordinal numbers
+            get = re.sub(r"(?<=2)(ND)|(?<=[4-9]|0)(TH|RTH)", '', get) #Strip any char of ordinal numbers
+            get = re.sub(r"(?<=[^1]3)(RD)", '', get); get = re.sub(r"(?<=11)(TH)", '', get)
         for val in self.wordTypes: #Word Street Names
             if type(val) == dict:
                 streA = '|'.join(val["ESPLANADE"])
@@ -266,10 +270,12 @@ class GeoLiberator:
                 if re.search(fr"\b{val}\b", get):
                     get = re.sub(fr"(^|\W){val}(\W|$)", ' ', get)
                     get = (re.sub(r"[\t!#$@%^*+=`~/]+| +", ' ', get)).strip(' ') #Strip any anomalies
-                    get = re.sub(r"(?<=2)(ND)|(?<=3)(RD)|(?<=[4-9]|0)(TH|RTH)", '', get) #Strip any char of ordinal numbers
+                    get = re.sub(r"(?<=2)(ND)|(?<=[4-9]|0)(TH|RTH)", '', get) #Strip any char of ordinal numbers
+                    get = re.sub(r"(?<=[^1]3)(RD)", '', get); get = re.sub(r"(?<=11)(TH)", '', get)
         else:
             get = (re.sub(r"[\t!#$@%^*+=`~/]+| +", ' ', get)).strip(' ') #Strip any anomalies
-            get = re.sub(r"(?<=2)(ND)|(?<=3)(RD)|(?<=[4-9]|0)(TH|RTH)", '', get) #Strip any char of ordinal numbers
+            get = re.sub(r"(?<=2)(ND)|(?<=[4-9]|0)(TH|RTH)", '', get) #Strip any char of ordinal numbers
+            get = re.sub(r"(?<=[^1]3)(RD)", '', get); get = re.sub(r"(?<=11)(TH)", '', get)
         if re.search(r"(\W|^)(ST|SNT)\W", get): #Check for 'Saint'
             get1 = re.sub(r"(\W|^)(ST|SNT)\W", ' ', get)
             saintFlag = True
