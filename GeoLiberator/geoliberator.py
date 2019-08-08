@@ -5,13 +5,11 @@ Application Name: GeoLiberator
 Functionality Purpose: Instill data quality upon address data
 Version: Beta 0.2.8
 '''
-#8/1/19
+#8/7/19
 
 import re
 import sys
 import time
-
-##t0 = time.process_time_ns()
 
 #Account for post cardinal direction
 #Account for '&' and 'STS' and multiple street types
@@ -391,9 +389,3 @@ def geoLiberate(addr, parse="address"):
         print(out)
     except (AttributeError, UnboundLocalError):
         raise ArgumentError(reason[0])
-
-##t1 = time.process_time_ns()
-##total = t1 - t0
-##if __name__ == "__main__":
-##    print(f"Timestamp 1: {t0} n/s\nTimestamp 2: {t1} n/s")
-##    print("Module Time Elapsed:", total, "nanoseconds")
