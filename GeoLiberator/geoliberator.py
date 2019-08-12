@@ -3,9 +3,9 @@
 Author: David J. Morfe
 Application Name: GeoLiberator
 Functionality Purpose: Instill data quality upon address data
-Version: Beta 0.2.8
+Version: Beta 0.2.9
 '''
-#8/7/19
+#8/12/19
 
 import re
 import sys
@@ -109,7 +109,7 @@ class GeoLiberator:
             hold += re.sub(r"[\[\]' ]", '', str(self.streetTypes[typ])) + ','
         self.streetTypesAll = list(hold.strip(',').split(','))
 
-    def getCompass(self, direc):
+    def _get_compass(self, direc):
         if 'N' == direc or "NO" == direc:
             return "NORTH"
         elif 'S' == direc or "SO" == direc:
@@ -121,7 +121,7 @@ class GeoLiberator:
         else:
             return False
 
-    def ordinalAdd(self, num):
+    def _ordinal_add(self, num):
         nn = ''
         if num == '11' or num == '12' or num == '13':
             return num + 'th'
@@ -135,7 +135,7 @@ class GeoLiberator:
             nn = num + 'th'
         return nn
 
-    def getState(self, log=''):
+    def _get_state(self, log=''):
         get = (self.addr).upper(); full_state = '' #Uppercase and create new address to return
         get = (re.sub(r"[\t!#$@%^*+=`~/]+| +", ' ', get)).strip(' ') #Strip any anomalies
         for key, val in self.states.items():
@@ -153,7 +153,7 @@ class GeoLiberator:
             nf.close()
         return str(full_state).upper()
 
-    def searchCycle(self, g, sF):
+    def _search_cycle(self, g, sF):
         new_find = ''
         if sF == False:
             for stre in self.wordTypes: #Check for word/name street types
@@ -179,7 +179,7 @@ class GeoLiberator:
             getStreetPattern3 = re.search(r"(?!\d)?(AVENUE|AVEN\.?|AVE\.?|AV\.?|AE\.?) ([A-Z]|OF ([A-Z]+ )?[A-Z]+)(?=\W|$)", g)
             if getStreetPattern1:
                 if getStreetPattern1.group(4) in self.streetTypes[key] or getStreetPattern1.group(7) in self.streetTypes[key]:
-                    new_find = self.getCompass(getStreetPattern1.group(2)) + ' ' + getStreetPattern1.group(3).strip('. ') + f" {key}"
+                    new_find = self._get_compass(getStreetPattern1.group(2)) + ' ' + getStreetPattern1.group(3).strip('. ') + f" {key}"
                     break
             elif getStreetPattern2:
                 if getStreetPattern2.group(3) in self.streetTypes[key] or getStreetPattern2.group(5) in self.streetTypes[key]:
@@ -277,16 +277,16 @@ class GeoLiberator:
         if re.search(r"(\W|^)(ST|SNT)\W", get): #Check for 'Saint'
             get1 = re.sub(r"(\W|^)(ST|SNT)\W", ' ', get)
             saintFlag = True
-            new_street = self.searchCycle(get1, saintFlag)
+            new_street = self._search_cycle(get1, saintFlag)
             if new_street == "OTHER":
                 saintFlag = False
-                new_street = self.searchCycle(get, saintFlag)
+                new_street = self._search_cycle(get, saintFlag)
         else:
-            new_street = self.searchCycle(get, saintFlag)
+            new_street = self._search_cycle(get, saintFlag)
         new_street = re.sub(r"^FT\W| FT\W", "FORT ", new_street) #Replace 'FT' with 'FORT'
         new_street = re.sub(r"(?<=1)ST", '', new_street) #Strip 1st ordinal number
         if re.search(r"\d+", new_street): #Apply ordinal numbers
-            ordNum = self.ordinalAdd(str(re.search(r"\d+", new_street).group()))
+            ordNum = self._ordinal_add(str(re.search(r"\d+", new_street).group()))
             new_street = re.sub(r"\d+", ordNum, new_street)
 
         if log != '': #Write to new or specfied file
@@ -356,7 +356,7 @@ def autoGeoLiberate(file_path, parse="address", write=''):
                     elif parse.lower() == "street":
                         adr.getStreet(log=write)
                     elif parse.lower() == "state":
-                        adr.getState(log=write)
+                        adr._get_state(log=write)
         else:
             if mode == False:
                 print("Running...")
@@ -369,7 +369,7 @@ def autoGeoLiberate(file_path, parse="address", write=''):
                 elif parse.lower() == "street":
                     out = adr.getStreet(log=write)
                 elif parse.lower() == "state":
-                    out = adr.getState(log=write)
+                    out = adr._get_state(log=write)
                 if mode == True:
                     print(out)
             print("Done!")
@@ -385,7 +385,7 @@ def geoLiberate(addr, parse="address"):
         elif parse.lower() == "street":
             out = adr.getStreet()
         elif parse.lower() == "state":
-            out = adr.getState()
+            out = adr._get_state()
         print(out)
     except (AttributeError, UnboundLocalError):
         raise ArgumentError(reason[0])
