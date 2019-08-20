@@ -1,9 +1,9 @@
 # The-GeoLiberator-Python-Module
-
+<td>
     <a href="https://pypi.org/project/GeoLiberator/">
     <img src="https://img.shields.io/pypi/v/pandas.svg" alt="latest release" />
     </a>
-
+</td>
 This module is an address parser. It takes in an address as an argument and outputs a standardized version. Otherwise, 'OTHER' will be the result if the parser fails.
 "It is alike a liberal because it takes in any variant addresses indiscriminately.
 And it is a liberator because it liberates the addresses from their inconsistencies."
