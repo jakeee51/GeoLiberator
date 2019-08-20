@@ -1,7 +1,7 @@
 # The-GeoLiberator-Python-Module
 <td>
     <a href="https://pypi.org/project/GeoLiberator/">
-    <img src="https://img.shields.io/pypi/v/pandas.svg" alt="latest release" />
+    <img src="https://img.shields.io/pypi/v/GeoLiberator.svg" alt="latest release" />
     </a>
 </td>
 
