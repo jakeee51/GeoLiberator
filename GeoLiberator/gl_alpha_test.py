@@ -147,9 +147,6 @@ def basicTest(mode=True):
     if gg == 18:
         print("\n*ALL Address Trials Successful!*\n")
 
-print(GeoLiberator("123-4E 2 RD").getAddress())
-print(GeoLiberator("123E1RD").getAddress())
-
 ##mergeMatch()
 ##autoGeoLiberate("hold.txt", "address")
 ##basicTest(mode=False)
