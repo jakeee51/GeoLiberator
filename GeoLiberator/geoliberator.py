@@ -15,6 +15,7 @@ import time
 #Account for '&' and 'STS' and multiple street types
 #Option to append borough, state, zip, based on argument
 #Create custom address formatter
+#Import json file for mapping of geographical data
 
 reason = ["Invalid parse argument given"]
 

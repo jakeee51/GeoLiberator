@@ -149,7 +149,7 @@ def basicTest(mode=True):
 
 ##mergeMatch()
 ##autoGeoLiberate("hold.txt", "address")
-##basicTest(mode=False)
+basicTest(mode=False)
 
 t1 = time.process_time()
 total = t1 - t0
