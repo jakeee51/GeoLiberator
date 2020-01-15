@@ -5,7 +5,7 @@ Application Name: GeoLiberator
 Functionality Purpose: Instill data quality upon address data
 Version: Beta 0.3.0
 '''
-#1/14/20
+#1/15/20
 
 import re
 import sys
@@ -14,9 +14,8 @@ import pandas as pd
 
 #Account for post cardinal direction
 #Account for '&' and 'STS' and multiple street types
-#Option to append borough, state, zip, based on argument
+#Option to append borough, state, zip based on argument; Function to parse borough
 #Create custom address formatter
-#Import json file for mapping of geographical data
 
 reason = ["Invalid parse argument given", "File type not supported", "Use 'address_field' argument for csv & excel files"]
 
@@ -136,6 +135,23 @@ class GeoLiberator:
         else:
             nn = num + 'th'
         return nn
+
+    def _get_zip(self, log=''):
+        get = (self.addr).upper(); full_zip = '' #Uppercase and create new address to return
+        get = (re.sub(r"[\t!#$@%^*+=`~/]+| +", ' ', get)).strip(' ') #Strip any anomalies
+        if re.search(r"\b\d{5}\b", get):
+                full_zip = re.search(r"\b\d{5}\b", get).group()
+        else:
+            full_zip = "OTHER"
+
+        if log != '': #Write to new or specfied file
+            fileName = re.sub(r"\..+", '', log)
+            if fileName.isdigit() or re.search(r'[\/:*?"<>|]', fileName):
+                fileName = "newly_parsed_zipcodes"
+            nf = open(f"{fileName}.txt", 'a')
+            nf.write(full_zip + '\n')
+            nf.close()
+        return str(full_zip).upper()
 
     def _get_state(self, log=''):
         get = (self.addr).upper(); full_state = '' #Uppercase and create new address to return
@@ -383,6 +399,8 @@ def autoGeoLiberate(file_path, address_field='', parse="address", write=''):
                 out = adr.getStreet(log=write)
             elif parse.lower() == "state":
                 out = adr._get_state(log=write)
+            elif parse.lower() == "zipcode":
+                out = adr._get_zip(log=write)
             if mode == True:
                 print(out)
         print("Done!")
@@ -399,6 +417,8 @@ def geoLiberate(addr, parse="address"):
             out = adr.getStreet()
         elif parse.lower() == "state":
             out = adr._get_state()
+        elif parse.lower() == "zipcode":
+            out = adr._get_zip()
         print(out)
     except (AttributeError, UnboundLocalError):
         raise ArgumentError(reason[0])
