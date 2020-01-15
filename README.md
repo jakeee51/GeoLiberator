@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://dev.pandas.io/static/imghttps://img.shields.io/pypi/v/geoliberator.svg"></img>
+  <img src="https://dev.pandas.io/static/imghttps://img.shields.io/pypi/v/geoliberator.svg"><br>
 </div>
 # The-GeoLiberator-Python-Module
 
