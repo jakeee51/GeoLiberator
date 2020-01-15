@@ -1,6 +1,7 @@
 <a href="https://pypi.org/project/GeoLiberator">
   <img src="https://img.shields.io/pypi/v/geoliberator.svg" alt="latest release" />
 </a>
+
 # The-GeoLiberator-Python-Module
 
 This module is an address parser. It takes in an address as an argument and outputs a standardized version. Otherwise, 'OTHER' will be the result if the parser fails.
