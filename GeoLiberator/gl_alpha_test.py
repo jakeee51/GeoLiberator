@@ -148,8 +148,8 @@ def basicTest(mode=True):
         print("\n*ALL Address Trials Successful!*\n")
 
 ##mergeMatch()
-##autoGeoLiberate("hold.txt", "address")
-basicTest(mode=False)
+##autoGeoLiberate("test.xlsx", "Address")
+##basicTest(mode=False)
 
 t1 = time.process_time()
 total = t1 - t0
