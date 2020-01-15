@@ -1,3 +1,10 @@
 Run in top level directory:
 python setup.py sdist bdist_wheel
 python -m twine upload dist/*
+
+Python Installation Paths:
+cd /usr/bin
+python -m site
+For a more concise list run getsitepackages from the site module in Python code:
+python -c "import site; print(site.getsitepackages())"
+python -m site --user-site
