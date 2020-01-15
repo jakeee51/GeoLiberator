@@ -3,13 +3,14 @@
 Author: David J. Morfe
 Application Name: GeoLiberator
 Functionality Purpose: Instill data quality upon address data
-Version: Beta 0.2.9
+Version: Beta 0.3.0
 '''
-#8/12/19
+#1/14/20
 
 import re
 import sys
 import time
+import pandas as pd
 
 #Account for post cardinal direction
 #Account for '&' and 'STS' and multiple street types
@@ -17,7 +18,7 @@ import time
 #Create custom address formatter
 #Import json file for mapping of geographical data
 
-reason = ["Invalid parse argument given"]
+reason = ["Invalid parse argument given", "File type not supported", "Use 'address_field' argument for csv & excel files"]
 
 class AddressError(BaseException):
     pass
@@ -325,55 +326,66 @@ def file_len(file_name):
     return i + 1
 
 #Takes text file as input and switch argument to determine which address property to be standardized
-def autoGeoLiberate(file_path, parse="address", write=''):
-    mode = True
+def autoGeoLiberate(file_path, address_field='', parse="address", write=''):
+    mode = True; lines = ''
     if not re.search(r"address|number|street", parse):
         raise ArgumentError(reason[0])
     if write != '':
         mode = False
-    with open(file_path) as f:
-        lines = f.readlines()
-        if len(sys.argv) == 2 and write != '':
-            if sys.argv[1] == '--status' or sys.argv[1] == "-S":
-                FL = file_len(file_path)
-                barIncr = int(FL * .025); barNum = 0; dashNum = 40; c = 0; lc = 0
-                print('|' + ('-' * 40) + '|' + " [0.00%]", end=''); sys.stdout.flush()
-                for line in lines:
-                    perc = (lc/FL)
-                    bar = '\r|' + ('█' * barNum) + ('-' * dashNum) + '|' + " [{:>.2%}]".format(perc)
-                    print(bar, end=''); sys.stdout.flush()
-                    c += 1; lc += 1
-                    if c == barIncr:
-                        if barNum < 39:
-                            c = 0; barNum += 1; dashNum -= 1
-                            print(bar, end=''); sys.stdout.flush()
-                    elif lc == FL:
-                        print('\r|' + ('█' * 40) + '|' + " [100%]  "); sys.stdout.flush()
-                    adr = GeoLiberator(str(line))
-                    if parse.lower() == "address":
-                        adr.getAddress(log=write)
-                    elif parse.lower() == "number":
-                        adr.getAddressNum(log=write)
-                    elif parse.lower() == "street":
-                        adr.getStreet(log=write)
-                    elif parse.lower() == "state":
-                        adr._get_state(log=write)
+    if address_field == '':
+        if re.search(r".xlsx?$", file_path) or re.search(r".csv$", file_path):
+            raise ArgumentError(reason[2])
+        with open(file_path) as f:
+            lines = f.readlines()
+    else:
+        if re.search(r".xlsx?$", file_path):
+            df = pd.read_excel(file_path, usecols=[str(address_field)])
+        elif re.search(r".csv$", file_path):
+            df = pd.read_csv(file_path, usecols=[str(address_field)])
         else:
-            if mode == False:
-                print("Running...")
+            raise ArgumentError(reason[1])
+        lines = df[str(address_field)]
+    if len(sys.argv) == 2 and write != '':
+        if sys.argv[1] == '--status' or sys.argv[1] == "-S":
+            FL = file_len(file_path)
+            barIncr = int(FL * .025); barNum = 0; dashNum = 40; c = 0; lc = 0
+            print('|' + ('-' * 40) + '|' + " [0.00%]", end=''); sys.stdout.flush()
             for line in lines:
+                perc = (lc/FL)
+                bar = '\r|' + ('█' * barNum) + ('-' * dashNum) + '|' + " [{:>.2%}]".format(perc)
+                print(bar, end=''); sys.stdout.flush()
+                c += 1; lc += 1
+                if c == barIncr:
+                    if barNum < 39:
+                        c = 0; barNum += 1; dashNum -= 1
+                        print(bar, end=''); sys.stdout.flush()
+                elif lc == FL:
+                    print('\r|' + ('█' * 40) + '|' + " [100%]  "); sys.stdout.flush()
                 adr = GeoLiberator(str(line))
                 if parse.lower() == "address":
-                    out = adr.getAddress(log=write)
+                    adr.getAddress(log=write)
                 elif parse.lower() == "number":
-                    out = adr.getAddressNum(log=write)
+                    adr.getAddressNum(log=write)
                 elif parse.lower() == "street":
-                    out = adr.getStreet(log=write)
+                    adr.getStreet(log=write)
                 elif parse.lower() == "state":
-                    out = adr._get_state(log=write)
-                if mode == True:
-                    print(out)
-            print("Done!")
+                    adr._get_state(log=write)
+    else:
+        if mode == False:
+            print("Running...")
+        for line in lines:
+            adr = GeoLiberator(str(line))
+            if parse.lower() == "address":
+                out = adr.getAddress(log=write)
+            elif parse.lower() == "number":
+                out = adr.getAddressNum(log=write)
+            elif parse.lower() == "street":
+                out = adr.getStreet(log=write)
+            elif parse.lower() == "state":
+                out = adr._get_state(log=write)
+            if mode == True:
+                print(out)
+        print("Done!")
 
 #Takes address as input and switch argument to determine which address property to be standardized
 def geoLiberate(addr, parse="address"):
