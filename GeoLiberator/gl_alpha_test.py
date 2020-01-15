@@ -148,7 +148,7 @@ def basicTest(mode=True):
         print("\n*ALL Address Trials Successful!*\n")
 
 ##mergeMatch()
-##autoGeoLiberate("test.xlsx", "Address")
+##geoLiberate("331 River Rd, New Milford, 07646 NJ ", "address")
 ##basicTest(mode=False)
 
 t1 = time.process_time()
