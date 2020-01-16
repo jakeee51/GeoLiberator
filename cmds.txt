@@ -3,6 +3,7 @@ python setup.py sdist bdist_wheel
 python -m twine upload dist/*
 
 Python Installation Paths:
+which python
 cd /usr/bin
 python -m site
 For a more concise list run getsitepackages from the site module in Python code:
