@@ -386,6 +386,8 @@ def autoGeoLiberate(file_path, address_field='', parse="address", write=''):
                     adr.getStreet(log=write)
                 elif parse.lower() == "state":
                     adr._get_state(log=write)
+                elif parse.lower() == "zipcode":
+                    out = adr._get_zip(log=write)
     else:
         if mode == False:
             print("Running...")
