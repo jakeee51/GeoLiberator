@@ -334,7 +334,7 @@ class GeoLiberator:
             nf.close()
         return new_addr
 
-#Acount the lines in a file
+#Count the lines in a file
 def file_len(file_name):
     with open(file_name) as f:
         for i, L in enumerate(f):
