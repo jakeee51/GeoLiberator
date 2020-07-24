@@ -16,6 +16,7 @@ import pandas as pd
 #Account for '&' and 'STS' and multiple street types
 #Option to append borough, state, zip based on argument; Function to parse borough
 #Create custom address formatter
+#Allow street types to be appended to library or option to use one's own library
 
 reason = ["Invalid parse argument given", "File type not supported", "Use 'address_field' argument for csv & excel files"]
 
