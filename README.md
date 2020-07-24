@@ -3,10 +3,8 @@
 </a>
 
 <a href="https://pepy.tech/project/geoliberator">
-  <img src="https://static.pepy.tech/badge/geoliberator" alt="latest release" />
+  <img src="https://static.pepy.tech/badge/geoliberator" alt="downloads" />
 </a>
-
-[![Downloads](https://pepy.tech/badge/geoliberator)](https://pepy.tech/project/geoliberator)
 
 # The-GeoLiberator-Python-Module
 
@@ -55,7 +53,8 @@ Output would look like this:
 321 NORTH JOHNSON AVENUE
 123-4 2nd STREET
 ```
-For that really lengthy list of addresses in a file, it's reccommended to use autoGeoLiberate() in your program and run it in a cli with the flag `--status`(`-S` for short) to monitor the module's progress. Like so: `python my_progam.py --status`
+For that really lengthy list of addresses in a file, it's reccommended to use autoGeoLiberate() in your program and run it in a cli with the flag `--status`(`-S` for short) to monitor the module's progress. Like so:
+`python my_program.py --status`
 
 ***For developmental purposes:***
 
@@ -76,4 +75,4 @@ The 'log' parameter is for entering in a file name to _append_ all address resul
 *(Note: these functions will always return a value)*
 
 # Copyright
-Copyright (c) 2019 The Python Packaging Authority. Released under the MIT License.
+Copyright (c) 2020 The Python Packaging Authority. Released under the MIT License.

@@ -9,3 +9,6 @@ python -m site
 For a more concise list run getsitepackages from the site module in Python code:
 python -c "import site; print(site.getsitepackages())"
 python -m site --user-site
+
+Dynamic Badge Markdown Formatting
+[![Downloads](https://pepy.tech/badge/geoliberator)](https://pepy.tech/project/geoliberator)
