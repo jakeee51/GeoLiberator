@@ -10,7 +10,7 @@ Version: Beta
 #Upload file for multiple addresses
 #Display liberated output
 
-from geoliberator import *
+from GeoLiberator import *
 import time
 import sys
 
