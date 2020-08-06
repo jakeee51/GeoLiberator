@@ -63,7 +63,8 @@ For that really lengthy list of addresses in a file, it's reccommended to use au
 
 `python my_program.py --status`
 
-***For developmental purposes:***
+
+<h2><b><i>For developmental purposes:</i></b></h2>
 
 ```python
 address_object = GL.GeoLiberator("123 Example St") # Create a 'GeoLiberator Object' with address as an argument
