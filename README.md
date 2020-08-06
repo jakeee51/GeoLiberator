@@ -15,12 +15,12 @@ And it is a liberator because it liberates the addresses from their inconsistenc
 
 **Usage:**
 
-To start, import with your desired handle to call upon the module with ease. Below you'll see the 2 main functions, `parse_address()` and `geoLiberate()` that return and print respectively.
+To start, import with your desired handle to call upon the module with ease. The function `parse_address()` returns the value while `geoLiberate()` prints the value.
 ```python
 import GeoLiberator as GL
 
 GL.parse_address("123 Example St, NY 01234", "address") # 'address' to parse the address
-# Returns: 123 EXAMPLE STREET
+# Returns: '123 EXAMPLE STREET'
 
 GL.geoLiberate("123 Example St, NY 01234", "full") # 'full' to parse the full address
 # Prints: 123 EXAMPLE STREET, NEW YORK 01234
