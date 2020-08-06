@@ -5,8 +5,10 @@
 <a href="https://pepy.tech/project/geoliberator">
   <img src="https://static.pepy.tech/badge/geoliberator" alt="downloads" />
 </a>
-<h2>HI</h2>
+
 # The-GeoLiberator-Python-Module
+
+<h3>HI</h3>
 
 This module is an address parser. It takes in an address as an argument and outputs a standardized version. Otherwise, 'OTHER' will be the result if the parser fails.
 "It is alike a liberal because it takes in any variant addresses indiscriminately.
