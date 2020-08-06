@@ -13,27 +13,33 @@ This module is an address parser. It takes in an address as an argument and outp
 And it is a liberator because it liberates the addresses from their inconsistencies."
 *(Note: This module does not do address validation but it will parse any address you throw at it to the best of its ability. Especially NYC addresses.)*
 
-**Usage:**
+<h2><b>Usage:</b></h2>
 
-To start, import with your desired handle to call upon the module with ease,
+To start, import with your desired handle to call upon the module with ease. The function `parse_address()` returns the value while `geoLiberate()` prints the value.
 ```python
 import GeoLiberator as GL
 
-GL.geoLiberate("123 Example St", "address") # 'address' to parse the full address
-#Output: 123 EXAMPLE STREET
+GL.parse_address("123 Example St, NY 01234", "address") # 'address' to parse the address
+# Returns: '123 EXAMPLE STREET'
 
-GL.geoLiberate("123 Example St", "number") # 'number' to parse the address house number
-#Output: 123
+GL.geoLiberate("123 Example St, NY 01234", "full") # 'full' to parse the full address
+# Prints: 123 EXAMPLE STREET, NEW YORK 01234
 
-GL.geoLiberate("123 Example St", "street") # 'street' to parse the full street
-#Output: EXAMPLE STREET
+GL.geoLiberate("123 Example St, NY 01234", "number") # 'number' to parse the address house number
+# Prints: 123
+
+GL.geoLiberate("123 Example St, NY 01234", "street") # 'street' to parse the street name
+# Prints: EXAMPLE STREET
 ```
 The first argument is any address of data type string.
 
-The second argument, as you may have noticed, determines what gets parsed. *(Note: if no argument given, parses full address by default)*
-* "address" - Full Address
+The second argument, 'parse', as you may have noticed, determines what gets parsed. *(Note: if no argument given, parses address by default)*
+* "address" - Address (only)
+* "full" - Full Address (including state and zipcode)
 * "number" - House Number
-* "street" - Full Street
+* "street" - Street Name
+* "state" - State
+* "zipcode" - Zipcode
 
 The following function's first argument is a file containing a list of addresses. It automatically loops through the rows and parses each address.
 ```python
@@ -49,26 +55,28 @@ Let's say 'file.txt' contains the following:
 ```
 Output would look like this:
 ```
-123 BOB ROAD
-321 NORTH JOHNSON AVENUE
-123-4 2nd STREET
+BOB ROAD
+NORTH JOHNSON AVENUE
+2nd STREET
 ```
 For that really lengthy list of addresses in a file, it's reccommended to use autoGeoLiberate() in your program and run it in a cli with the flag `--status`(`-S` for short) to monitor the module's progress. Like so:
 
 `python my_program.py --status`
 
-***For developmental purposes:***
+
+<h2><b><i>For developmental purposes:</i></b></h2>
 
 ```python
 address_object = GL.GeoLiberator("123 Example St") # Create a 'GeoLiberator Object' with address as an argument
 #This new address object can then be parsed using the dot operator like so:
+address_object.full_address() # includes state and zipcode
 address_object.getAddress()
 address_object.getAddressNum()
 address_object.getStreet()
 ```
 These member functions return a string value.
 
-**Function Parameters:**
+**Member Function Parameters:**
 ```python
 getAddress(log = '')
 ```

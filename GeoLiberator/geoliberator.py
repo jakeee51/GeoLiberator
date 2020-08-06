@@ -3,9 +3,9 @@
 Author: David J. Morfe
 Application Name: GeoLiberator
 Functionality Purpose: Instill data quality upon address data
-Version: Beta 0.3.0
+Version: Beta
 '''
-#1/15/20
+#8/6/20
 
 import re
 import sys
@@ -14,8 +14,9 @@ import pandas as pd
 
 #Account for post cardinal direction
 #Account for '&' and 'STS' and multiple street types
-#Option to append borough, state, zip based on argument; Function to parse borough
 #Create custom address formatter
+
+#Function to parse city
 #Allow street types to be appended to library or option to use one's own library
 
 reason = ["Invalid parse argument given", "File type not supported", "Use 'address_field' argument for csv & excel files"]
@@ -49,7 +50,7 @@ class GeoLiberator:
     Sample Code:
         from geoliberator import *
         GL_Object = GeoLiberator("123 Sample Street, New York 12345")
-        GL_Object.getAddress(log="output_log.txt", mode=True) #This code should both print and create a log file
+        GL_Object.getAddress(log="output_log.txt") #This code appends parsed address to a log file (useful in loops)
     '''
     
     def __init__(self, addr):
@@ -110,6 +111,11 @@ class GeoLiberator:
         for typ in self.streetTypes:
             hold += re.sub(r"[\[\]' ]", '', str(self.streetTypes[typ])) + ','
         self.streetTypesAll = list(hold.strip(',').split(','))
+    def __none_other(self, *args):
+        for val in args:
+            if val == "OTHER":
+                return False
+        return True
 
     def _get_compass(self, direc):
         if 'N' == direc or "NO" == direc:
@@ -136,41 +142,6 @@ class GeoLiberator:
         else:
             nn = num + 'th'
         return nn
-
-    def _get_zip(self, log=''):
-        get = (self.addr).upper(); full_zip = '' #Uppercase and create new address to return
-        get = (re.sub(r"[\t!#$@%^*+=`~/]+| +", ' ', get)).strip(' ') #Strip any anomalies
-        if re.search(r"\b\d{5}\b", get):
-                full_zip = re.search(r"\b\d{5}\b", get).group()
-        else:
-            full_zip = "OTHER"
-
-        if log != '': #Write to new or specfied file
-            fileName = re.sub(r"\..+", '', log)
-            if fileName.isdigit() or re.search(r'[\/:*?"<>|]', fileName):
-                fileName = "newly_parsed_zipcodes"
-            nf = open(f"{fileName}.txt", 'a')
-            nf.write(full_zip + '\n')
-            nf.close()
-        return str(full_zip).upper()
-
-    def _get_state(self, log=''):
-        get = (self.addr).upper(); full_state = '' #Uppercase and create new address to return
-        get = (re.sub(r"[\t!#$@%^*+=`~/]+| +", ' ', get)).strip(' ') #Strip any anomalies
-        for key, val in self.states.items():
-            if re.search(fr"\b{val}\b", get):
-                full_state = key
-        if full_state == '':
-            full_state = "OTHER"
-
-        if log != '': #Write to new or specfied file
-            fileName = re.sub(r"\..+", '', log)
-            if fileName.isdigit() or re.search(r'[\/:*?"<>|]', fileName):
-                fileName = "newly_parsed_states"
-            nf = open(f"{fileName}.txt", 'a')
-            nf.write(full_state + '\n')
-            nf.close()
-        return str(full_state).upper()
 
     def _search_cycle(self, g, sF):
         new_find = ''
@@ -217,8 +188,43 @@ class GeoLiberator:
             new_find = "OTHER"
         return new_find
 
+    def get_zip(self, log=''):
+        get = (self.addr).upper(); full_zip = '' #Uppercase and create get zipcode to return
+        get = (re.sub(r"[\t!#$@%^*+=`~/]+| +", ' ', get)).strip(' ') #Strip any anomalies
+        if re.search(r"\b\d{5}\b", get):
+            full_zip = re.search(r"\b\d{5}\b", get).group()
+        else:
+            full_zip = "OTHER"
+
+        if log != '': #Write to new or specfied file
+            fileName = re.sub(r"\..+", '', log)
+            if fileName.isdigit() or re.search(r'[\/:*?"<>|]', fileName):
+                fileName = "newly_parsed_zipcodes"
+            nf = open(f"{fileName}.txt", 'a')
+            nf.write(full_zip + '\n')
+            nf.close()
+        return full_zip
+
+    def get_state(self, log=''):
+        get = (self.addr).upper(); full_state = '' #Uppercase and find full state to return
+        get = (re.sub(r"[\t!#$@%^*+=`~/]+| +", ' ', get)).strip(' ') #Strip any anomalies
+        for key, val in self.states.items():
+            if re.search(fr"\b{val}\b", get):
+                full_state = key
+        if full_state == '':
+            full_state = "OTHER"
+
+        if log != '': #Write to new or specfied file
+            fileName = re.sub(r"\..+", '', log)
+            if fileName.isdigit() or re.search(r'[\/:*?"<>|]', fileName):
+                fileName = "newly_parsed_states"
+            nf = open(f"{fileName}.txt", 'a')
+            nf.write(full_state + '\n')
+            nf.close()
+        return str(full_state).upper()
+
     def getAddressNum(self, log=''):
-        get = (self.addr).upper(); new_addr_num = '' #Uppercase and create new address to return
+        get = (self.addr).upper(); new_addr_num = '' #Uppercase and create get house number to return
         if not get[0].isdigit():
             for key, val in self.states.items():
                 if re.search(fr"^{val}\b", get):
@@ -281,7 +287,7 @@ class GeoLiberator:
         return str(new_addr_num)
 
     def getStreet(self, log=''):
-        get = (self.addr).upper(); new_street = ''; saintFlag = False #Uppercase and create new address to return
+        get = (self.addr).upper(); new_street = ''; saintFlag = False #Uppercase and get street name to return
         if '/' in get:
             for key, val in self.states.items():
                 if re.search(fr"\b{val}\b", get):
@@ -321,7 +327,7 @@ class GeoLiberator:
         get = (self.addr).upper(); new_addr = '' #Uppercase and create new address to return
         gS = GeoLiberator(get).getStreet()
         gAN = GeoLiberator(get).getAddressNum()
-        if gAN != "OTHER" and gS != "OTHER":
+        if self.__none_other(gS, gAN):
             new_addr = gAN + ' ' + gS
         else:
             new_addr = "OTHER"
@@ -335,6 +341,26 @@ class GeoLiberator:
             nf.close()
         return new_addr
 
+    def full_address(self, log=''):
+        get = (self.addr).upper(); full_addr = '' #Uppercase and create 'full' address to return
+        get = (re.sub(r"[\t!#$@%^*+=`~/]+| +", ' ', get)).strip(' ') #Strip any anomalies
+        gA = GeoLiberator(get).getAddress()
+        gST = GeoLiberator(get).get_state()
+        gZP = GeoLiberator(get).get_zip()
+        if self.__none_other(gA, gST, gZP):
+            full_addr = gA + ', ' + gST + ' ' + gZP
+        else:
+            full_addr = "OTHER"
+
+        if log != '': #Write to new or specfied file
+            fileName = re.sub(r"\..+", '', log)
+            if fileName.isdigit() or re.search(r'[\/:*?"<>|]', fileName):
+                fileName = "newly_parsed_addresses"
+            nf = open(f"{fileName}.txt", 'a')
+            nf.write(full_addr + '\n')
+            nf.close()
+        return full_addr
+
 #Count the lines in a file
 def file_len(file_name):
     with open(file_name) as f:
@@ -342,8 +368,8 @@ def file_len(file_name):
             pass
     return i + 1
 
-#Takes text file as input and switch argument to determine which address property to be standardized
-def autoGeoLiberate(file_path, address_field='', parse="address", write=''):
+#Takes text file as input and parse argument to determine which address property to be standardized
+def autoGeoLiberate(file_path: str, address_field='', parse="address", write=''):
     mode = True; lines = ''
     if not re.search(r"address|number|street", parse):
         raise ArgumentError(reason[0])
@@ -386,9 +412,11 @@ def autoGeoLiberate(file_path, address_field='', parse="address", write=''):
                 elif parse.lower() == "street":
                     adr.getStreet(log=write)
                 elif parse.lower() == "state":
-                    adr._get_state(log=write)
+                    adr.get_state(log=write)
                 elif parse.lower() == "zipcode":
-                    out = adr._get_zip(log=write)
+                    out = adr.get_zip(log=write)
+                elif parse.lower() == "full":
+                    out = adr.full_address(log=write)
     else:
         if mode == False:
             print("Running...")
@@ -401,15 +429,17 @@ def autoGeoLiberate(file_path, address_field='', parse="address", write=''):
             elif parse.lower() == "street":
                 out = adr.getStreet(log=write)
             elif parse.lower() == "state":
-                out = adr._get_state(log=write)
+                out = adr.get_state(log=write)
             elif parse.lower() == "zipcode":
-                out = adr._get_zip(log=write)
+                out = adr.get_zip(log=write)
+            elif parse.lower() == "full":
+                out = adr.full_address(log=write)
             if mode == True:
                 print(out)
         print("Done!")
 
-#Takes address as input and switch argument to determine which address property to be standardized
-def geoLiberate(addr, parse="address"):
+#Takes address as input and parse argument to determine which address property to be standardized
+def geoLiberate(addr: str, parse="address"):
     adr = GeoLiberator(str(addr))
     try:
         if parse.lower() == "address":
@@ -419,9 +449,31 @@ def geoLiberate(addr, parse="address"):
         elif parse.lower() == "street":
             out = adr.getStreet()
         elif parse.lower() == "state":
-            out = adr._get_state()
+            out = adr.get_state()
         elif parse.lower() == "zipcode":
-            out = adr._get_zip()
+            out = adr.get_zip()
+        elif parse.lower() == "full":
+            out = adr.full_address()
         print(out)
+    except (AttributeError, UnboundLocalError):
+        raise ArgumentError(reason[0])
+
+#Returns standardized address based on parse argument
+def parse_address(addr: str, parse="address") -> str:
+    adr = GeoLiberator(str(addr))
+    try:
+        if parse.lower() == "address":
+            out = adr.getAddress()
+        elif parse.lower() == "number":
+            out = adr.getAddressNum()
+        elif parse.lower() == "street":
+            out = adr.getStreet()
+        elif parse.lower() == "state":
+            out = adr.get_state()
+        elif parse.lower() == "zipcode":
+            out = adr.get_zip()
+        elif parse.lower() == "full":
+            out = adr.full_address()
+        return str(out)
     except (AttributeError, UnboundLocalError):
         raise ArgumentError(reason[0])

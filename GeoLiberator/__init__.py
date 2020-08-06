@@ -7,4 +7,4 @@ Phase: Beta
 '''
 
 name = "GeoLiberator"
-from .geoliberator import GeoLiberator, geoLiberate, autoGeoLiberate
+from .geoliberator import GeoLiberator, parse_address, geoLiberate, autoGeoLiberate

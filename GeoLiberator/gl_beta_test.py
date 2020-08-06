@@ -148,8 +148,8 @@ def basicTest(mode=True):
         print("\n*ALL Address Trials Successful!*\n")
 
 ##mergeMatch()
-##geoLiberate("331 River Rd, New Milford, 07646 NJ ", "address")
 ##basicTest(mode=False)
+##geoLiberate("123 Joe St, NY 01234", "full")
 
 t1 = time.process_time()
 total = t1 - t0
