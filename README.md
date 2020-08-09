@@ -1,82 +1,87 @@
-<a href="https://pypi.org/project/gomaps">
-  <img src="https://img.shields.io/pypi/v/gomaps.svg" alt="latest release" />
+<a href="https://pypi.org/project/GeoLiberator">
+  <img src="https://img.shields.io/pypi/v/geoliberator.svg" alt="latest release" />
 </a>
 
-# The-Gomaps-Python-Package
+<a href="https://pepy.tech/project/geoliberator">
+  <img src="https://static.pepy.tech/badge/geoliberator" alt="downloads" />
+</a>
 
-Gomaps! A Google Maps API for querying places on Google Maps and scraping the metadata of that search. Results of a query include the following:
+# The-GeoLiberator-Python-Module
 
-* Place Name
-* Place Google Maps URL
-* Place Address
-* Place Coordinates (lattitude/longitude)
-* Place Website
-* Place Phone Number
-* Place Star Rating
-* Place Open Hours
+This module is an address parser. It takes in an address as an argument and outputs a standardized version. Otherwise, 'OTHER' will be the result if the parser fails.
+"It is alike a liberal because it takes in any variant addresses indiscriminately.
+And it is a liberator because it liberates the addresses from their inconsistencies."
+*(Note: This module does not do address validation but it will parse any address you throw at it to the best of its ability. Especially NYC addresses.)*
 
-There is also another feature within this package that scrapes Google Maps __Popular Times__ data!
+<h2><b>Usage:</b></h2>
 
-<h2><b>Documentation:</b></h2>
-<a href="https://gomaps.readthedocs.io/en/latest/">https://gomaps.readthedocs.io/</a>
-
-<h2><b>Quickstart:</b></h2>
-
-To start, import the functions from the `gomaps` package.
+To start, import with your desired handle to call upon the module with ease. The function `parse_address()` returns the value while `geoLiberate()` prints the value.
 ```python
-from gomaps import maps_search
+import GeoLiberator as GL
 
-result = maps_search("Tops Diner") # Returns a list of GoogleMaps objects
-# GoogleMapsResults([<gomaps.GoogleMaps object; Place-Name: Tops Diner>])
+GL.parse_address("123 Example St, NY 01234", "address") # 'address' to parse the address
+# Returns: '123 EXAMPLE STREET'
 
-result[0].get_values() # Populates the object's attributes & returns a dictionary
-'''
-{
-  'title': 'Tops Diner',
-  'url': 'https://www.google.com/maps/place/Tops+Diner/@40.7506065,-74.1639023,17z/data=!4m2!3m1!1s0x89c2547b4ec3235b:0x7342f11f69197f92!8m2!3d40.7506065!4d-74.1639023',
-  'address': '500 Passaic Ave, East Newark, NJ 07029',
-  'coords': ('40.7506065', '-74.1639023'),
-  'website': 'https://www.thetopsdiner.com/',
-  'phone_number': '(973) 481-0490',
-  'rating': '4.6',
-  'open_hours': {'Currently': 'Closed - Opens 8AM',
-                 'Hours': {'Friday': '8AM–11PM', 'Saturday': '8AM–11PM', 'Sunday': '8AM–11PM',
-                           'Monday': '8AM–11PM', 'Tuesday': '8AM–11PM', 'Wednesday': '8AM–11PM', 'Thursday': '8AM–11PM'}
-                }
-}
-'''
+GL.geoLiberate("123 Example St, NY 01234", "full") # 'full' to parse the full address
+# Prints: 123 EXAMPLE STREET, NEW YORK 01234
 
-from gomaps import popular_times
+GL.geoLiberate("123 Example St, NY 01234", "number") # 'number' to parse the address house number
+# Prints: 123
 
-result = popular_times("Tops Diner", "chromedriver.exe") # See 'Drivers' section below regarding the 'chromedriver.exe' argument
-'''
-{
-  'Sunday': ['0% busy at 6 AM.', '0% busy at 7 AM.', '20% busy at 8 AM.', '34% busy at 9 AM.', '49% busy at 10 AM.',
-             '59% busy at 11 AM.', '62% busy at 12 PM.', '56% busy at 1 PM.', '47% busy at 2 PM.', '41% busy at 3 PM.',
-             '45% busy at 4 PM.', '57% busy at 5 PM.', '70% busy at 6 PM.', '74% busy at 7 PM.', '66% busy at 8 PM.',
-             '47% busy at 9 PM.', '27% busy at 10 PM.', '0% busy at 11 PM.'],
-  'Monday': ...
-}
-'''
+GL.geoLiberate("123 Example St, NY 01234", "street") # 'street' to parse the street name
+# Prints: EXAMPLE STREET
+```
+The first argument is any address of data type string.
+
+The second argument, 'parse', as you may have noticed, determines what gets parsed. *(Note: if no argument given, parses address by default)*
+* "address" - Address (only)
+* "full" - Full Address (including state and zipcode)
+* "number" - House Number
+* "street" - Street Name
+* "state" - State
+* "zipcode" - Zipcode
+
+The following function's first argument is a file containing a list of addresses. It automatically loops through the rows and parses each address.
+```python
+GL.autoGeoLiberate("file.txt", "street", "output_file_name.txt") # 'street' to parse full street name
+#If no output file name given, program will print all parsed addresses
 ```
 
+Let's say 'file.txt' contains the following:
+```
+123 Bob Rd
+321 N Johnson Aven
+123-4 2nd St
+```
+Output would look like this:
+```
+BOB ROAD
+NORTH JOHNSON AVENUE
+2nd STREET
+```
+For that really lengthy list of addresses in a file, it's reccommended to use autoGeoLiberate() in your program and run it in a cli with the flag `--status`(`-S` for short) to monitor the module's progress. Like so:
 
-**Drivers:**
+`python my_program.py --status`
 
-Selenium requires a driver to interface with the chosen browser. Firefox, for example, requires geckodriver, which needs to be installed before the below examples can be run. Make sure it's in your PATH, e. g., place it in /usr/bin or /usr/local/bin.
 
-Failure to observe this step will give you an error selenium.common.exceptions.WebDriverException: Message: 'geckodriver' executable needs to be in PATH.
+<h2><b><i>For developmental purposes:</i></b></h2>
 
-Other supported browsers will have their own drivers available. Links to some of the more popular browser drivers follow. *(Note: PhantomJS is another alternative)*
+```python
+address_object = GL.GeoLiberator("123 Example St") # Create a 'GeoLiberator Object' with address as an argument
+#This new address object can then be parsed using the dot operator like so:
+address_object.full_address() # includes state and zipcode
+address_object.getAddress()
+address_object.getAddressNum()
+address_object.getStreet()
+```
+These member functions return a string value.
 
-|          |                                                                       |
-|----------|-----------------------------------------------------------------------|
-| Chrome:  | https://sites.google.com/a/chromium.org/chromedriver/downloads        |
-| Edge:    | https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/ |
-| Firefox: | https://github.com/mozilla/geckodriver/releases                       |
-| Safari:  | https://webkit.org/blog/6900/webdriver-support-in-safari-10/          |
-
-*source: https://pypi.org/project/selenium/*
+**Member Function Parameters:**
+```python
+getAddress(log = '')
+```
+The 'log' parameter is for entering in a file name to _append_ all address results to a log file.
+*(Note: these functions will always return a value)*
 
 # Copyright
 Copyright (c) 2020 The Python Packaging Authority. Released under the MIT License.
