@@ -5,6 +5,7 @@ python:
   - "3.8"
 cache: pip
 install: 
+  - pip install pandas
   - pip install git+https://github.com/jakeee51/GeoLiberator
 script:
   - python3 GL_tests.py
