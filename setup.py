@@ -5,7 +5,7 @@ with open("README.md", 'r') as f:
 
 setuptools.setup(
     name = "GeoLiberator",
-    version = "0.3.3",
+    version = "0.3.4",
     author = "David J. Morfe",
     author_email = "jakemorfe@gmail.com",
     license = "MIT",

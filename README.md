@@ -7,7 +7,7 @@
 </a>
 
 <a href="https://travis-ci.org/github/jakeee51/GeoLiberator">
-  <img src="https://api.travis-ci.org/jakeee51/GeoLiberator.svg?branch=master" />
+  <img src="https://travis-ci.org/jakeee51/GeoLiberator.svg?branch=master&status=passed" />
 </a>
 
 # The-GeoLiberator-Python-Module
