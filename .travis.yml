@@ -12,14 +12,14 @@ script:
 jobs:
   include:
     - stage: deploy
-    python: 3.8
-    install: 
-      - pip install pandas
-      - pip install git+https://github.com/jakeee51/GeoLiberator
-    before_deploy:
-      - python3 poppypib.py
-    deploy:
-      provider: pypi
-      username: "__token__"
-      password: $PYPI_PASSWORD
-      edge: true
+      python: 3.8
+      install: 
+        - pip install pandas
+        - pip install git+https://github.com/jakeee51/GeoLiberator
+      before_deploy:
+        - python3 poppypib.py
+      deploy:
+        provider: pypi
+        username: "__token__"
+        password: $PYPI_PASSWORD
+        edge: true
