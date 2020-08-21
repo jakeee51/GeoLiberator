@@ -150,7 +150,7 @@ def basicTest(mode=True):
 ##mergeMatch()
 basicTest(mode=False)
 res = parse_address("123 Joe St, NY 01234", "full")
-assert res == "123 JOE STREET, NEW YORK 01234", "full parse failed!"
+assert res == "123 JOE STREET, NEW YORK 01234", "Full parse failed!"
 
 t1 = time.process_time()
 total = t1 - t0
