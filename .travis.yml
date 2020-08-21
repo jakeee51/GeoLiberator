@@ -9,7 +9,6 @@ install:
   - pip install git+https://github.com/jakeee51/GeoLiberator
 script:
   - python3 GL_tests.py
-
 jobs:
   include:
     - stage: deploy
