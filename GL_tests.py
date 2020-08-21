@@ -1,4 +1,4 @@
-from geoliberator import *
+from GeoLiberator import *
 import pandas as pd
 import time
 t0 = time.process_time()
@@ -148,8 +148,9 @@ def basicTest(mode=True):
         print("\n*ALL Address Trials Successful!*\n")
 
 ##mergeMatch()
-##basicTest(mode=False)
-##geoLiberate("123 Joe St, NY 01234", "full")
+basicTest(mode=False)
+res = parse_address("123 Joe St, NY 01234", "full")
+assert res == "123 JOE STREET, NEW YORK 01234", "full parse failed!"
 
 t1 = time.process_time()
 total = t1 - t0

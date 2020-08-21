@@ -6,6 +6,10 @@
   <img src="https://static.pepy.tech/badge/geoliberator" alt="downloads" />
 </a>
 
+<a href="https://travis-ci.org/github/jakeee51/GeoLiberator">
+  <img src="https://api.travis-ci.org/jakeee51/GeoLiberator.svg?branch=master" />
+</a>
+
 # The-GeoLiberator-Python-Module
 
 This module is an address parser. It takes in an address as an argument and outputs a standardized version. Otherwise, 'OTHER' will be the result if the parser fails.

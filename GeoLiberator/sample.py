@@ -1,5 +1,6 @@
 from geoliberator import *
 
+
 address = "123 N Main St"
 #switch argument values:
 #0 - Street Name
@@ -7,6 +8,8 @@ address = "123 N Main St"
 #2 - Full Address
 geoLiberate(address, parse="street")
 print("____________________")
+
+
 
 #getStreet()
 #getAddressNum()
