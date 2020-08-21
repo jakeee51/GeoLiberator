@@ -14,5 +14,5 @@ before_deploy:
 deploy:
   provider: pypi
   username: "__token__"
-  password: PYPI_PASSWORD
+  password: $PYPI_PASSWORD
   edge: true
