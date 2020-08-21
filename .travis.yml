@@ -16,6 +16,7 @@ jobs:
       install: 
         - pip install pandas
         - pip install git+https://github.com/jakeee51/GeoLiberator
+      script: skip
       before_deploy:
         - python3 poppypib.py
       deploy:
