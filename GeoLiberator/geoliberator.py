@@ -16,8 +16,11 @@ import pandas as pd
 #Account for '&' and 'STS' and multiple street types
 #Create custom address formatter
 
+#Options to return Street Type, Cardinal Direction
+#Implement __main__.py for cli tools (use argparse)
+ #https://realpython.com/command-line-interfaces-python-argparse/
 #Function to parse city
-#Allow street types to be appended to library or option to use one's own library
+#Allow street types, wordTypes & Cities to be appended to library or option to use one's own library
 
 reason = ["Invalid parse argument given", "File type not supported", "Use 'address_field' argument for csv & excel files"]
 
