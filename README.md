@@ -88,4 +88,4 @@ The 'log' parameter is for entering in a file name to _append_ all address resul
 *(Note: these functions will always return a value)*
 
 # Copyright
-Copyright (c) 2020 The Python Packaging Authority. Released under the MIT License.
+Copyright (c) 2024 The Python Packaging Authority. Released under the MIT License.
